@@ -7,6 +7,8 @@ import pytesseract
 import camelot
 import warnings
 
+##made changes to test
+
 def extract_table_with_camelot(pdf_path, page_number):
     """ Try extracting table using Camelot (works for structured PDFs). """
     tables = camelot.read_pdf(pdf_path, pages=str(page_number))
