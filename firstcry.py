@@ -6,6 +6,8 @@ from pdf2image import convert_from_path
 import pytesseract
 import camelot
 import warnings
+from datetime import datetime
+
 
 def extract_table_with_camelot(pdf_path, page_number):
     """ Try extracting table using Camelot (works for structured PDFs). """
@@ -100,7 +102,7 @@ def split_pdf_by_orderid(pdf_path, output_folder):
                 order_pages[orderid].append(order_details)
             else:
                 order_pages[prev_order_id].append(order_details)
-        with open("logfile_firstcry.txt", "w", encoding="utf-8") as log_file:
+        with open("logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
           log_file.write(f"{i+1} page completed.")
     
     # Create PDFs for each OrderID
@@ -116,11 +118,13 @@ def split_pdf_by_orderid(pdf_path, output_folder):
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid}.pdf")
             with open(output_pdf_path, "wb") as output_pdf:
                 writer.write(output_pdf)
-            with open("logfile_firstcry.txt", "w", encoding="utf-8") as log_file:
+            with open("logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
                 log_file.write(f"Saved: {output_pdf_path}")
 
 # Example usage
 warnings.filterwarnings("ignore", category=UserWarning, module="camelot.parsers.base")
 pdf_path = "FIRSTCRY COMBINE.pdf"  # Replace with your PDF file path
 output_folder = "firstcry_output_pdfs"  # Folder to save separated PDFs
+with open("logfile_firstcry.txt", "w+", encoding="utf-8") as log_file:
+  log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}")
 split_pdf_by_orderid(pdf_path, output_folder)

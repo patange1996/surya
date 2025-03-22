@@ -6,6 +6,7 @@ from pdf2image import convert_from_path
 import pytesseract
 import camelot
 import warnings
+from datetime import datetime
 
 ##made
 
@@ -103,8 +104,8 @@ def split_pdf_by_orderid(pdf_path, output_folder):
                 order_pages[orderid].append(order_details)
             else:
                 order_pages[prev_order_id].append(order_details)
-        with open("logfile_amazon.txt", "w", encoding="utf-8") as log_file:
-          log_file.write(f"{i+1} page completed.")
+        with open("logfile_amazon.txt", "a+", encoding="utf-8") as log_file:
+          log_file.write(f"{i+1} page completed.\n")
     
     # Create PDFs for each OrderID
     with open(pdf_path, "rb") as infile:
@@ -119,10 +120,13 @@ def split_pdf_by_orderid(pdf_path, output_folder):
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid}.pdf")
             with open(output_pdf_path, "wb") as output_pdf:
                 writer.write(output_pdf)
-            print(f"Saved: {output_pdf_path}")
+            with open("logfile_amazon.txt", "a+", encoding="utf-8") as log_file:
+              log_file.write(f"Saved: {output_pdf_path}\n")
 
 # Example usage
 warnings.filterwarnings("ignore", category=UserWarning, module="camelot.parsers.base")
 pdf_path = "AMAZON ORDER LABEL.pdf"  # Replace with your PDF file path
 output_folder = "amazon_output_pdfs"  # Folder to save separated PDFs
+with open("logfile_amazon.txt", "w+", encoding="utf-8") as log_file:
+  log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}\n")
 split_pdf_by_orderid(pdf_path, output_folder)

@@ -3,6 +3,7 @@ import os, camelot
 import pandas as pd
 import re
 from itertools import zip_longest
+from datetime import datetime
 
 def extract_text_with_fitz(input_pdf, page_num):
     doc = fitz.open(input_pdf)
@@ -121,19 +122,19 @@ def split_pdf_custom(input_pdf, output_folder, top_ratio=0.4):
               orderid = i.get("Order No.", None)
               orderid = orderid.split("_")[0]
               order_pages[str(orderid)] = i
-              with open("logfile_meesho.txt", "w", encoding="utf-8") as log_file:
-                log_file.write(f"Order ID: {orderid}, SKU: {i.get("SKU", None)}, Qty: {i.get("Qty", None)}")
-                log_file.write("-" * 50)
+              with open("logfile_meesho.txt", "a+", encoding="utf-8") as log_file:
+                log_file.write(f"Order ID: {orderid}, SKU: {i.get("SKU", None)}, Qty: {i.get("Qty", None)}\n")
+                log_file.write("-" * 50 + "\n")
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid_name}.pdf")
             new_doc.save(output_pdf_path)
-            with open("logfile_meesho.txt", "w", encoding="utf-8") as log_file:
-              log_file.write(f"✅ Split PDF saved as: {output_pdf_path}")
+            with open("logfile_meesho.txt", "a+", encoding="utf-8") as log_file:
+              log_file.write(f"✅ Split PDF saved as: {output_pdf_path}\n")
         else:
             new_doc = fitz.open(output_pdf_path)
             new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
             new_doc.insert_page(-1) 
-            with open("logfile_meesho.txt", "w", encoding="utf-8") as log_file:
-              log_file.write(f"❌ Order ID not found in the page {page_num}. Hence concatenating it with previous pdf.")
+            with open("logfile_meesho.txt", "a+", encoding="utf-8") as log_file:
+              log_file.write(f"❌ Order ID not found in the page {page_num}. Hence concatenating it with previous pdf.\n")
             output_pdf_path_temp = os.path.join(output_folder, f"Order_{orderid_name}_temp.pdf")
             new_doc.save(output_pdf_path_temp)
             os.remove(output_pdf_path)
@@ -144,4 +145,6 @@ def split_pdf_custom(input_pdf, output_folder, top_ratio=0.4):
 
 # Example Usage (30% top, 70% bottom)
 output_folder = "meesho_output_pdfs"  # Folder to save separated PDFs
+with open("logfile_meesho.txt", "w+", encoding="utf-8") as log_file:
+  log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}\n")
 final = split_pdf_custom("MEESHO LABEL INVOICE.pdf", output_folder, top_ratio=0.34)
