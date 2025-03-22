@@ -79,11 +79,11 @@ def split_pdf_by_orderid(pdf_path, output_folder):
     prev_order_id= ""
     
     for i, page in enumerate(doc):
-        if i < 140:
+        if i < 139:
           continue
         text = extract_text_from_page(page)
         if text:
-            order_details = extract_table_with_camelot(pdf_path, i)
+            order_details = extract_table_with_camelot(pdf_path, i+1)
             orderid, number_or_id, first_page_match = extract_order_details(text)
             if orderid and len(orderid.split("-")[0]) == 3:
                 if orderid not in order_pages and not skip_page_for_now:
