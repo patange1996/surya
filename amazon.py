@@ -103,7 +103,7 @@ def split_pdf_by_orderid(pdf_path, output_folder):
                 order_pages[orderid].append(order_details)
             else:
                 order_pages[prev_order_id].append(order_details)
-        with open("logfile_firstcry.txt", "w", encoding="utf-8") as log_file:
+        with open("logfile_amazon.txt", "w", encoding="utf-8") as log_file:
           log_file.write(f"{i+1} page completed.")
     
     # Create PDFs for each OrderID
