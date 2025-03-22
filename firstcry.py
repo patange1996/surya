@@ -80,7 +80,7 @@ def split_pdf_by_orderid(pdf_path, output_folder):
     for i, page in enumerate(doc):
         text = extract_text_from_page(page)
         if text:
-            order_details = extract_table_with_camelot(pdf_path, i)
+            order_details = extract_table_with_camelot(pdf_path, i+1)
             orderid, scanner_page_match = extract_order_details(text)
             if orderid:
                 if orderid not in order_pages and not skip_page_for_now:
@@ -95,11 +95,12 @@ def split_pdf_by_orderid(pdf_path, output_folder):
             else:
                 order_pages[prev_order_id].append(i)
                 prev_order_id = ""
-        if order_details:
+        if order_details and not skip_page_for_now:
             if orderid:
                 order_pages[orderid].append(order_details)
             else:
                 order_pages[prev_order_id].append(order_details)
+        print(f"{i+1} page completed.")
     
     # Create PDFs for each OrderID
     with open(pdf_path, "rb") as infile:

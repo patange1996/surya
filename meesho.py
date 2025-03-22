@@ -2,6 +2,7 @@ import fitz  # PyMuPDF
 import os, camelot
 import pandas as pd
 import re
+from itertools import zip_longest
 
 def extract_text_with_fitz(input_pdf, page_num):
     doc = fitz.open(input_pdf)
@@ -19,9 +20,11 @@ def extract_text_with_fitz(input_pdf, page_num):
       
       keys = filtered_lines[:5]
       values = filtered_lines[5:]
+      
+      value_chunks = [values[i:i+5] for i in range(0, len(values), 5)]
 
       # Create a dictionary
-      data_dict = dict(zip(keys, values))
+      data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
       return data_dict
 
 def extract_text_with_camelot(pdf_path, page_number):
@@ -40,9 +43,11 @@ def extract_text_with_camelot(pdf_path, page_number):
         
         keys = filtered_lines[:5]
         values = filtered_lines[5:]
+        
+        value_chunks = [values[i:i+5] for i in range(0, len(values), 5)]
 
         # Create a dictionary
-        data_dict = dict(zip(keys, values))
+        data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
         return data_dict      
 
 
@@ -60,13 +65,15 @@ def split_pdf_custom(input_pdf, output_folder, top_ratio=0.4):
     order_pages = {}
 
     for page_num, page in enumerate(doc):
-        new_doc = fitz.open()  # Create a new PDF document
+        if page_num < 1089:
+          continue
         if result_dict := extract_text_with_fitz(input_pdf, page_num):
             if not result_dict.get("Order No.", None):
-                result_dict = extract_text_with_camelot(input_pdf, page_num)
+                result_dict = extract_text_with_camelot(input_pdf, page_num+1)
         else:
-            result_dict = extract_text_with_camelot(input_pdf, page_num)
-        if result_dict.get("Order No.", None):
+            result_dict = extract_text_with_camelot(input_pdf, page_num+1)
+        if result_dict:
+            new_doc = fitz.open()  # Create a new PDF document
             page = doc[page_num]  # Get current page
             rect = page.rect  # Get original page size
             top_height = rect.height * top_ratio  # Calculate top section height
@@ -83,27 +90,30 @@ def split_pdf_custom(input_pdf, output_folder, top_ratio=0.4):
             bottom_page.show_pdf_page(bottom_page.rect, doc, page_num, clip=bottom_rect)
 
             # Save the new PDF with two pages per original page
-            orderid = result_dict.get("Order No.", None)
-            orderid = orderid.split("_")[0]
-            sku = result_dict.get("SKU", None)
-            qty = result_dict.get("Qty", None)
-            if orderid:
-              output_pdf_path = os.path.join(output_folder, f"Order_{orderid}.pdf")
-              new_doc.save(output_pdf_path)
-              order_pages[str(orderid)] = result_dict
-              print(f"✅ Split PDF saved as: {output_pdf_path}")
-              print(f"Order ID: {orderid}, SKU: {sku}, Qty: {qty}")
-              print("-" * 50)
-            else:
-              print("❌ Order ID not found in the page.")
-              print("-" * 50)
+            df = pd.DataFrame(result_dict)
+            orderid_name = ""
+            for i in df.to_dict(orient="records"):
+              orderid = i.get("Order No.", None)
+              orderid = orderid.split("_")[0]
+              sku = i.get("SKU", None)
+              qty = i.get("Qty", None)
+              orderid_name += f"_{orderid}"
+              order_pages[str(orderid)] = i
+            output_pdf_path = os.path.join(output_folder, f"Order_{orderid_name}.pdf")
+            new_doc.save(output_pdf_path)
+            print(f"✅ Split PDF saved as: {output_pdf_path}")
+            print(f"Order ID: {orderid}, SKU: {sku}, Qty: {qty}")
+            print("-" * 50)
         else:
+            new_doc = fitz.open(output_pdf_path)
+            new_doc.insert_pdf(doc, from_page=page_num+1, to_page=page_num+1)
+            new_doc.insert_page(-1) 
             with open("logfile.txt", "w", encoding="utf-8") as log_file:
-              log_file.write(f"❌ Order ID not found in the page.{page_num}")
-            print("❌ Order ID not found in the page.{page_num}")
+              log_file.write(f"❌ Order ID not found in the page {page_num}. Hence concatenating it with previous pdf.")
         new_doc.close()
+        
     return order_pages
 
 # Example Usage (30% top, 70% bottom)
 output_folder = "meesho_output_pdfs"  # Folder to save separated PDFs
-final = split_pdf_custom("MEESHO LABEL INVOICE.pdf", output_folder, top_ratio=0.35)
+final = split_pdf_custom("MEESHO LABEL INVOICE.pdf", output_folder, top_ratio=0.33)
