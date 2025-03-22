@@ -33,6 +33,8 @@ def extract_text_with_camelot(pdf_path, page_number):
     if tables.n > 0:
         df = tables[0].df
         filtered_df = df[df.apply(lambda row: row.astype(str).str.contains("Product Details", case=False, na=False).any(), axis=1)]
+        if filtered_df.empty:
+          return None
         text = filtered_df.iloc[(0,0)]
         # Split the text by newline
         lines = text.split("\n")
@@ -65,10 +67,9 @@ def split_pdf_custom(input_pdf, output_folder, top_ratio=0.4):
     order_pages = {}
 
     for page_num, page in enumerate(doc):
-        if page_num < 1089:
-          continue
         if result_dict := extract_text_with_fitz(input_pdf, page_num):
-            if not result_dict.get("Order No.", None):
+            istext = bool(re.fullmatch(r"[a-zA-Z]+", result_dict.get("Order No.", None)[0]))
+            if not result_dict.get("Order No.", None) or istext:
                 result_dict = extract_text_with_camelot(input_pdf, page_num+1)
         else:
             result_dict = extract_text_with_camelot(input_pdf, page_num+1)
@@ -91,29 +92,30 @@ def split_pdf_custom(input_pdf, output_folder, top_ratio=0.4):
 
             # Save the new PDF with two pages per original page
             df = pd.DataFrame(result_dict)
-            orderid_name = ""
+            orderid_name = "_".join(set([i.split("_")[0] for i in result_dict.get("Order No.", [])]))
             for i in df.to_dict(orient="records"):
               orderid = i.get("Order No.", None)
               orderid = orderid.split("_")[0]
-              sku = i.get("SKU", None)
-              qty = i.get("Qty", None)
-              orderid_name += f"_{orderid}"
               order_pages[str(orderid)] = i
+              print(f"Order ID: {orderid}, SKU: {i.get("SKU", None)}, Qty: {i.get("Qty", None)}")
+              print("-" * 50)
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid_name}.pdf")
             new_doc.save(output_pdf_path)
             print(f"✅ Split PDF saved as: {output_pdf_path}")
-            print(f"Order ID: {orderid}, SKU: {sku}, Qty: {qty}")
-            print("-" * 50)
         else:
             new_doc = fitz.open(output_pdf_path)
-            new_doc.insert_pdf(doc, from_page=page_num+1, to_page=page_num+1)
+            new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
             new_doc.insert_page(-1) 
             with open("logfile.txt", "w", encoding="utf-8") as log_file:
               log_file.write(f"❌ Order ID not found in the page {page_num}. Hence concatenating it with previous pdf.")
+            output_pdf_path_temp = os.path.join(output_folder, f"Order_{orderid_name}_temp.pdf")
+            new_doc.save(output_pdf_path_temp)
+            os.remove(output_pdf_path)
+            os.rename(output_pdf_path_temp, output_pdf_path)
         new_doc.close()
         
     return order_pages
 
 # Example Usage (30% top, 70% bottom)
 output_folder = "meesho_output_pdfs"  # Folder to save separated PDFs
-final = split_pdf_custom("MEESHO LABEL INVOICE.pdf", output_folder, top_ratio=0.33)
+final = split_pdf_custom("MEESHO LABEL INVOICE.pdf", output_folder, top_ratio=0.34)
