@@ -103,7 +103,8 @@ def split_pdf_by_orderid(pdf_path, output_folder):
                 order_pages[orderid].append(order_details)
             else:
                 order_pages[prev_order_id].append(order_details)
-        print(f"{i+1} page completed.")
+        with open("logfile_firstcry.txt", "w", encoding="utf-8") as log_file:
+          log_file(f"{i+1} page completed.")
     
     # Create PDFs for each OrderID
     with open(pdf_path, "rb") as infile:

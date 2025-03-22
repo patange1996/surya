@@ -26,15 +26,18 @@ def extract_text_with_fitz(input_pdf, page_num):
       # Create a dictionary
       data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
       return data_dict
+    else:
+      return {}
 
 def extract_text_with_camelot(pdf_path, page_number):
     """ Try extracting table using Camelot (works for structured PDFs). """
     tables = camelot.read_pdf(pdf_path, pages=str(page_number))
     if tables.n > 0:
+        digit_match = re.compile(r"\d_\d", re.IGNORECASE)
         df = tables[0].df
         filtered_df = df[df.apply(lambda row: row.astype(str).str.contains("Product Details", case=False, na=False).any(), axis=1)]
         if filtered_df.empty:
-          return None
+          return {}
         text = filtered_df.iloc[(0,0)]
         # Split the text by newline
         lines = text.split("\n")
@@ -43,6 +46,22 @@ def extract_text_with_camelot(pdf_path, page_number):
         remove_values = {"Product Details", "Original For Recipient", "TAX INVOICE"}
         filtered_lines = [line for line in lines if line not in remove_values]
         
+        #place the key value in the proper position
+        if filtered_lines[4] != "Order No.":
+          filtered_lines.insert(4, "Order No.")
+        order_matching_pos = [i for i, item in enumerate(filtered_lines) if digit_match.search(item)]
+        if order_matching_pos:
+          match_index = order_matching_pos[0]  # Get first match
+
+          if match_index != 9:  # If not already at position 10
+              value = filtered_lines.pop(match_index)  # Remove it
+              if len(filtered_lines) < 10:  # Ensure the list has enough length
+                  filtered_lines.extend([""] * (10 - len(filtered_lines)))  # Fill with empty values if needed
+              if "free size" in filtered_lines[5].lower():
+                  filtered_lines[5] = filtered_lines[5].split("Free Size")[0].strip()
+                  filtered_lines.insert(6, "Free Size")
+                  filtered_lines.pop()
+                  filtered_lines[9] = value  # Insert at position 10          
         keys = filtered_lines[:5]
         values = filtered_lines[5:]
         
@@ -50,7 +69,9 @@ def extract_text_with_camelot(pdf_path, page_number):
 
         # Create a dictionary
         data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
-        return data_dict      
+        return data_dict 
+    else:
+      return {}     
 
 
 def split_pdf_custom(input_pdf, output_folder, top_ratio=0.4):
@@ -68,12 +89,15 @@ def split_pdf_custom(input_pdf, output_folder, top_ratio=0.4):
 
     for page_num, page in enumerate(doc):
         if result_dict := extract_text_with_fitz(input_pdf, page_num):
-            istext = bool(re.fullmatch(r"[a-zA-Z]+", result_dict.get("Order No.", None)[0]))
-            if not result_dict.get("Order No.", None) or istext:
+            if result_dict.get("Order No.", None):
+                istext = bool(re.fullmatch(r"[a-zA-Z]+", result_dict.get("Order No.", [None])[0]))
+                if istext:
+                  result_dict = extract_text_with_camelot(input_pdf, page_num+1)
+            else:
                 result_dict = extract_text_with_camelot(input_pdf, page_num+1)
         else:
             result_dict = extract_text_with_camelot(input_pdf, page_num+1)
-        if result_dict:
+        if result_dict.get("Order No.", None):
             new_doc = fitz.open()  # Create a new PDF document
             page = doc[page_num]  # Get current page
             rect = page.rect  # Get original page size
@@ -97,16 +121,18 @@ def split_pdf_custom(input_pdf, output_folder, top_ratio=0.4):
               orderid = i.get("Order No.", None)
               orderid = orderid.split("_")[0]
               order_pages[str(orderid)] = i
-              print(f"Order ID: {orderid}, SKU: {i.get("SKU", None)}, Qty: {i.get("Qty", None)}")
-              print("-" * 50)
+              with open("logfile_meesho.txt", "w", encoding="utf-8") as log_file:
+                log_file.write(f"Order ID: {orderid}, SKU: {i.get("SKU", None)}, Qty: {i.get("Qty", None)}")
+                log_file.write("-" * 50)
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid_name}.pdf")
             new_doc.save(output_pdf_path)
-            print(f"✅ Split PDF saved as: {output_pdf_path}")
+            with open("logfile_meesho.txt", "w", encoding="utf-8") as log_file:
+              log_file.write(f"✅ Split PDF saved as: {output_pdf_path}")
         else:
             new_doc = fitz.open(output_pdf_path)
             new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
             new_doc.insert_page(-1) 
-            with open("logfile.txt", "w", encoding="utf-8") as log_file:
+            with open("logfile_meesho.txt", "w", encoding="utf-8") as log_file:
               log_file.write(f"❌ Order ID not found in the page {page_num}. Hence concatenating it with previous pdf.")
             output_pdf_path_temp = os.path.join(output_folder, f"Order_{orderid_name}_temp.pdf")
             new_doc.save(output_pdf_path_temp)

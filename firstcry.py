@@ -100,7 +100,8 @@ def split_pdf_by_orderid(pdf_path, output_folder):
                 order_pages[orderid].append(order_details)
             else:
                 order_pages[prev_order_id].append(order_details)
-        print(f"{i+1} page completed.")
+        with open("logfile_firstcry.txt", "w", encoding="utf-8") as log_file:
+          log_file.write(f"{i+1} page completed.")
     
     # Create PDFs for each OrderID
     with open(pdf_path, "rb") as infile:
@@ -115,7 +116,8 @@ def split_pdf_by_orderid(pdf_path, output_folder):
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid}.pdf")
             with open(output_pdf_path, "wb") as output_pdf:
                 writer.write(output_pdf)
-            print(f"Saved: {output_pdf_path}")
+            with open("logfile_firstcry.txt", "w", encoding="utf-8") as log_file:
+                log_file.write(f"Saved: {output_pdf_path}")
 
 # Example usage
 warnings.filterwarnings("ignore", category=UserWarning, module="camelot.parsers.base")
