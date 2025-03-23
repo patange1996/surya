@@ -136,7 +136,7 @@ columns = set()
 for values in op.values():
   for i in values:
     if isinstance(i, list):
-      columns.update(values.keys())
+      columns.update(i[0].keys())
 
 # Sort columns (optional)
 columns = sorted(columns)
@@ -146,11 +146,14 @@ with open("output_amazon.csv", "w", newline="", encoding="utf-8") as file:
     writer = csv.writer(file)
     
     # Write header (first column as "Name" + all extracted columns)
-    writer.writerow(["Name"] + columns)
+    writer.writerow(["orderid"] + columns)
     
     # Write data rows
     for key, values in op.items():
-        row = [key] + [values.get(col, "") for col in columns]  # Fill missing columns with empty values
+        for v in values:
+          if isinstance(v, list):
+            for j in v:
+              row = [key] + [j.get(col, "") for col in columns]  # Fill missing columns with empty values
         writer.writerow(row)
 
-print("CSV file created successfully!")
+print("CSV file created successfully!, Closing the Script\n")
