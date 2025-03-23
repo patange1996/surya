@@ -1,5 +1,5 @@
 import os
-import re
+import re, csv
 import PyPDF2
 import fitz  # PyMuPDF
 from pdf2image import convert_from_path
@@ -120,6 +120,7 @@ def split_pdf_by_orderid(pdf_path, output_folder):
                 writer.write(output_pdf)
             with open("logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
                 log_file.write(f"Saved: {output_pdf_path}\n")
+    return order_pages
 
 # Example usage
 warnings.filterwarnings("ignore", category=UserWarning, module="camelot.parsers.base")
@@ -127,4 +128,29 @@ pdf_path = "FIRSTCRY COMBINE.pdf"  # Replace with your PDF file path
 output_folder = "firstcry_output_pdfs"  # Folder to save separated PDFs
 with open("logfile_firstcry.txt", "w+", encoding="utf-8") as log_file:
   log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}\n")
-split_pdf_by_orderid(pdf_path, output_folder)
+op = split_pdf_by_orderid(pdf_path, output_folder)
+columns = set()
+for values in op.values():
+  for i in values:
+    if isinstance(i, list):
+      columns.update(i[0].keys())
+
+# Sort columns (optional)
+columns = sorted(columns)
+
+# Open the CSV file for writing
+with open("output_firstcry.csv", "w", newline="", encoding="utf-8") as file:
+    writer = csv.writer(file)
+    
+    # Write header (first column as "Name" + all extracted columns)
+    writer.writerow(["orderid"] + columns)
+    
+    # Write data rows
+    for key, values in op.items():
+        for v in values:
+          if isinstance(v, list):
+            for j in v:
+              row = [key] + [j.get(col, "") for col in columns]  # Fill missing columns with empty values
+        writer.writerow(row)
+
+print("CSV file created successfully!, Closing the Script\n")
