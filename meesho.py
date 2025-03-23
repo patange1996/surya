@@ -1,7 +1,7 @@
 import fitz  # PyMuPDF
 import os, camelot
 import pandas as pd
-import re
+import re, csv
 from itertools import zip_longest
 from datetime import datetime
 
@@ -147,4 +147,24 @@ def split_pdf_custom(input_pdf, output_folder, top_ratio=0.4):
 output_folder = "meesho_output_pdfs"  # Folder to save separated PDFs
 with open("logfile_meesho.txt", "w+", encoding="utf-8") as log_file:
   log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}\n")
-final = split_pdf_custom("MEESHO LABEL INVOICE.pdf", output_folder, top_ratio=0.34)
+op = split_pdf_custom("MEESHO LABEL INVOICE.pdf", output_folder, top_ratio=0.34)
+columns = set()
+for values in op.values():
+  columns.update(values.keys())
+
+# Sort columns (optional)
+columns = sorted(columns)
+
+# Open the CSV file for writing
+with open("output_meesho.csv", "w", newline="", encoding="utf-8") as file:
+    writer = csv.writer(file)
+    
+    # Write header (first column as "Name" + all extracted columns)
+    writer.writerow(["orderid"] + columns)
+    
+    # Write data rows
+    for key, values in op.items():
+      row = [key] + [values.get(col, "") for col in columns]  # Fill missing columns with empty values
+      writer.writerow(row)
+
+print("CSV file created successfully!, Closing the Script\n")
