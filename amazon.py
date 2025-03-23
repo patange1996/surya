@@ -1,4 +1,4 @@
-import os
+import os, csv
 import re
 import PyPDF2
 import fitz  # PyMuPDF
@@ -106,6 +106,7 @@ def split_pdf_by_orderid(pdf_path, output_folder):
                 order_pages[prev_order_id].append(order_details)
         with open("logfile_amazon.txt", "a+", encoding="utf-8") as log_file:
           log_file.write(f"{i+1} page completed.\n")
+          log_file.write(f"found {orderid} in {i+1} page with {order_details}\n")
     
     # Create PDFs for each OrderID
     with open(pdf_path, "rb") as infile:
@@ -122,6 +123,7 @@ def split_pdf_by_orderid(pdf_path, output_folder):
                 writer.write(output_pdf)
             with open("logfile_amazon.txt", "a+", encoding="utf-8") as log_file:
               log_file.write(f"Saved: {output_pdf_path}\n")
+    return order_pages
 
 # Example usage
 warnings.filterwarnings("ignore", category=UserWarning, module="camelot.parsers.base")
@@ -129,4 +131,26 @@ pdf_path = "AMAZON ORDER LABEL.pdf"  # Replace with your PDF file path
 output_folder = "amazon_output_pdfs"  # Folder to save separated PDFs
 with open("logfile_amazon.txt", "w+", encoding="utf-8") as log_file:
   log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}\n")
-split_pdf_by_orderid(pdf_path, output_folder)
+op = split_pdf_by_orderid(pdf_path, output_folder)
+columns = set()
+for values in op.values():
+  for i in values:
+    if isinstance(i, list):
+      columns.update(values.keys())
+
+# Sort columns (optional)
+columns = sorted(columns)
+
+# Open the CSV file for writing
+with open("output_amazon.csv", "w", newline="", encoding="utf-8") as file:
+    writer = csv.writer(file)
+    
+    # Write header (first column as "Name" + all extracted columns)
+    writer.writerow(["Name"] + columns)
+    
+    # Write data rows
+    for key, values in op.items():
+        row = [key] + [values.get(col, "") for col in columns]  # Fill missing columns with empty values
+        writer.writerow(row)
+
+print("CSV file created successfully!")
