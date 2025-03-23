@@ -103,7 +103,7 @@ def split_pdf_by_orderid(pdf_path, output_folder):
             else:
                 order_pages[prev_order_id].append(order_details)
         with open("logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
-          log_file.write(f"{i+1} page completed.")
+          log_file.write(f"{i+1} page completed.\n")
     
     # Create PDFs for each OrderID
     with open(pdf_path, "rb") as infile:
@@ -119,12 +119,12 @@ def split_pdf_by_orderid(pdf_path, output_folder):
             with open(output_pdf_path, "wb") as output_pdf:
                 writer.write(output_pdf)
             with open("logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
-                log_file.write(f"Saved: {output_pdf_path}")
+                log_file.write(f"Saved: {output_pdf_path}\n")
 
 # Example usage
 warnings.filterwarnings("ignore", category=UserWarning, module="camelot.parsers.base")
 pdf_path = "FIRSTCRY COMBINE.pdf"  # Replace with your PDF file path
 output_folder = "firstcry_output_pdfs"  # Folder to save separated PDFs
 with open("logfile_firstcry.txt", "w+", encoding="utf-8") as log_file:
-  log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}")
+  log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}\n")
 split_pdf_by_orderid(pdf_path, output_folder)
