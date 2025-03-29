@@ -1,0 +1,100 @@
+Starting the log for mentioned time:2025-03-30 01:14:22
+Order ID: OD333460091730830100, SKU: BS-136, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333460091730830100.pdf
+Order ID: OD333460000969811100, SKU: BabyHatButton-Black, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333460000969811100.pdf
+Order ID: OD433459976425065100, SKU: EM-34, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433459976425065100.pdf
+Order ID: OD333459707535635100, SKU: WC-02, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333459707535635100.pdf
+Order ID: OD433459664392027100, SKU: BS-109, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433459664392027100.pdf
+Order ID: OD433459510579734100, SKU: BabyHatButton-Red, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433459510579734100.pdf
+Order ID: OD433458959325468100, SKU: BS-02, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433458959325468100.pdf
+Order ID: OD333458942501794100, SKU: BS-62, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333458942501794100.pdf
+Order ID: OD433458736020437100, SKU: BabyHatButton-Red, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433458736020437100.pdf
+Order ID: OD333458323145264100, SKU: BS-76, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333458323145264100.pdf
+Order ID: OD333458125351281100, SKU: BS-109, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333458125351281100.pdf
+Order ID: OD333458025673049400, SKU: ChildrenBag-Dinosaur-Blue, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333458025673049400.pdf
+Order ID: OD433457965166907100, SKU: BS-03, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433457965166907100.pdf
+Order ID: OD433457850596684100, SKU: BS-03, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433457850596684100.pdf
+Order ID: OD433457735134842100, SKU: SOCKS-SET5-PURPLE-STRAW, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433457735134842100.pdf
+Order ID: OD333457339911134400, SKU: BS-62, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333457339911134400.pdf
+Order ID: OD333457139902669100, SKU: Cap-Balaclava-Dark, Qty: 180 18
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333457139902669100.pdf
+Order ID: OD333456751853713400, SKU: BS-107, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333456751853713400.pdf
+Order ID: OD333456743203151400, SKU: BS-109, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333456743203151400.pdf
+Order ID: OD433456600374881100, SKU: BS-03, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433456600374881100.pdf
+Order ID: OD433456424635938100, SKU: BS-03, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433456424635938100.pdf
+Order ID: OD333456047872209100, SKU: BS-107, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333456047872209100.pdf
+Order ID: OD433455982758071100, SKU: WC-05, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433455982758071100.pdf
+Order ID: OD333455830249406100, SKU: BabyHat_Black, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333455830249406100.pdf
+Order ID: OD433455728755698100, SKU: BS-62, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433455728755698100.pdf
+Order ID: OD433455710272765100, SKU: WC-01, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433455710272765100.pdf
+Order ID: OD333455547928764100, SKU: BL-243, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333455547928764100.pdf
+Order ID: OD433455477782677100, SKU: WC-06, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433455477782677100.pdf
+Order ID: OD433455460643122100, SKU: Cap-Balaclava-, Qty: 180 18
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433455460643122100.pdf
+Order ID: OD333454998088862100, SKU: BL-239, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333454998088862100.pdf
+Order ID: OD433454657092209100, SKU: BS-109, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433454657092209100.pdf
+Order ID: OD433454619230609100, SKU: BS-126, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433454619230609100.pdf
+Order ID: OD333454796351432100, SKU: KEY-CHEX-CREAM, Qty: Artificial
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333454796351432100.pdf
