@@ -1,5 +1,5 @@
-import os, csv
-import re
+import os
+import re, csv
 import PyPDF2
 import fitz  # PyMuPDF
 from pdf2image import convert_from_path
@@ -8,7 +8,6 @@ import camelot
 import warnings
 from datetime import datetime
 
-##made
 
 def extract_table_with_camelot(pdf_path, page_number):
     """ Try extracting table using Camelot (works for structured PDFs). """
@@ -17,16 +16,18 @@ def extract_table_with_camelot(pdf_path, page_number):
         df = tables[0].df  # Convert to DataFrame
         df.columns = df.iloc[0] # Set first row as header
         df = df[1:].reset_index(drop=True) # Remove first row
-        desc_col = next((col for col in df.columns if 'description' in col.lower()), None)
+        df.columns = df.columns.str.replace(r"[\t\n]", " ", regex=True).str.strip()
+        df = df.apply(lambda col: col.astype(str).str.replace("\t", " ").str.replace("\n", " ").str.strip())
+        desc_col = next((col for col in df.columns if 'item name' in col.lower()), None)
         qty_col = next((col for col in df.columns if 'qty' in col.lower()), None)
         if desc_col and qty_col and "Qty" in df.columns:
           #remove the rows above "TOTAL:"
-          idx = df[df.apply(lambda row: row.astype(str).str.contains('TOTAL:', case=False, na=False).any(), axis=1)].index
+          idx = df[df.apply(lambda row: row.astype(str).str.contains('Total IGST Amount', case=False, na=False).any(), axis=1)].index
           if not idx.empty and idx[0] > 0:
               df = df.iloc[:idx[0]]  # Keep only the rows above "total"
           df_filtered = df[[desc_col, qty_col]]
           df_filtered = df_filtered.copy()
-          sku_pattern = r"\(([^)]+)\)\s*HSN:"
+          sku_pattern = r'Style Code:\s*"([^"]+)"'
           # df_filtered["sku"] = df_filtered[desc_col].str.extract(sku_pattern)
           df_filtered.loc[:, "sku"] = (
               df_filtered[desc_col]
@@ -42,14 +43,13 @@ def extract_table_with_camelot(pdf_path, page_number):
 
 def extract_order_details(text):
     """Extract Order ID, SKU, and Quantity from text."""
-    # orderid_match = re.search(r"Order\s*(ld|Id|Number):\s*[^0-9]*?(\d+)\s*[-~]?\s*(\d+)\s*[-~]?\s*(\d+)(?=$|\s|[^0-9])", text, re.IGNORECASE)
-    orderid_match = re.search(r"Order\s*(ld|Id|Number):\s*[^0-9]*?(\d+)[\s.\-~]*(\d+)[\s.\-~]*(\d+)", text, re.IGNORECASE)
-    first_page_match = re.search(r"Ship to:|Ship From:", text, re.IGNORECASE)
+    # need to change the regex pattern to match the order id
+    orderid_match = re.search(r"Order No\s*:\s*([\w\d]+)", text, re.IGNORECASE) or re.search(r"W(\w{1,})(?=\w\s+Sold By)", text, re.IGNORECASE)
+    scanner_page_match = re.search(r"Ship to:|Ship From:", text, re.IGNORECASE)
     
-    orderid = f"{orderid_match.group(2)}-{orderid_match.group(3)}-{orderid_match.group(4)}" if orderid_match else None
-    number_or_id = orderid_match.group(1) if orderid_match else None
+    orderid = orderid_match.group(1) if orderid_match else None
     
-    return orderid, number_or_id, bool(first_page_match)
+    return orderid, bool(scanner_page_match)
   
 def clean_text(text):
     """Clean text by removing extra spaces, newlines, etc."""
@@ -83,8 +83,8 @@ def split_pdf_by_orderid(pdf_path, output_folder):
         text = extract_text_from_page(page)
         if text:
             order_details = extract_table_with_camelot(pdf_path, i+1)
-            orderid, number_or_id, first_page_match = extract_order_details(text)
-            if orderid and len(orderid.split("-")[0]) == 3:
+            orderid, scanner_page_match = extract_order_details(text)
+            if orderid:
                 if orderid not in order_pages and not skip_page_for_now:
                     order_pages[orderid] = []
                 elif orderid not in order_pages and skip_page_for_now:
@@ -92,9 +92,7 @@ def split_pdf_by_orderid(pdf_path, output_folder):
                 order_pages[orderid].append(i)
                 skip_page_for_now = []
                 prev_order_id = orderid
-            elif number_or_id and number_or_id != "Number":
-                skip_page_for_now = [i]
-            elif first_page_match:
+            elif scanner_page_match:
                 skip_page_for_now = [i]
             else:
                 order_pages[prev_order_id].append(i)
@@ -104,9 +102,8 @@ def split_pdf_by_orderid(pdf_path, output_folder):
                 order_pages[orderid].append(order_details)
             else:
                 order_pages[prev_order_id].append(order_details)
-        with open("logfile_amazon.txt", "a+", encoding="utf-8") as log_file:
+        with open("logs/logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
           log_file.write(f"{i+1} page completed.\n")
-          log_file.write(f"found {orderid} in {i+1} page with {order_details}\n")
     
     # Create PDFs for each OrderID
     with open(pdf_path, "rb") as infile:
@@ -121,15 +118,15 @@ def split_pdf_by_orderid(pdf_path, output_folder):
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid}.pdf")
             with open(output_pdf_path, "wb") as output_pdf:
                 writer.write(output_pdf)
-            with open("logfile_amazon.txt", "a+", encoding="utf-8") as log_file:
-              log_file.write(f"Saved: {output_pdf_path}\n")
+            with open("logs/logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
+                log_file.write(f"Saved: {output_pdf_path}\n")
     return order_pages
 
 # Example usage
 warnings.filterwarnings("ignore", category=UserWarning, module="camelot.parsers.base")
-pdf_path = "AMAZON ORDER LABEL.pdf"  # Replace with your PDF file path
-output_folder = "amazon_output_pdfs"  # Folder to save separated PDFs
-with open("logfile_amazon.txt", "w+", encoding="utf-8") as log_file:
+pdf_path = "scrape_with_pdf/FIRSTCRY COMBINE.pdf"  # Replace with your PDF file path
+output_folder = "outputs/firstcry_output_pdfs"  # Folder to save separated PDFs
+with open("logs/logfile_firstcry.txt", "w+", encoding="utf-8") as log_file:
   log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}\n")
 op = split_pdf_by_orderid(pdf_path, output_folder)
 columns = set()
@@ -142,7 +139,7 @@ for values in op.values():
 columns = sorted(columns)
 
 # Open the CSV file for writing
-with open("output_amazon.csv", "w", newline="", encoding="utf-8") as file:
+with open("outputs/output_firstcry.csv", "w", newline="", encoding="utf-8") as file:
     writer = csv.writer(file)
     
     # Write header (first column as "Name" + all extracted columns)
