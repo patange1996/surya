@@ -16,6 +16,6 @@ def grab_required_fields(data):
 
 
 if __name__ == "__main__":
-    file_path = "scrape_with_excel/amazon_new/Waiting.txt"  # Replace with the actual file path
+    file_path = "scrape_with_excel/amazon_new/amazon.txt"  # Replace with the actual file path
     df = txt_to_dataframe(file_path)
     final_output_dict = grab_required_fields(df.to_dict(orient="records"))
