@@ -1,5 +1,5 @@
 import os, csv
-import re
+import re, camelot
 import PyPDF2
 import fitz  # PyMuPDF
 from pdf2image import convert_from_path
@@ -9,6 +9,34 @@ from datetime import datetime
 import pandas as pd
 
 ##made
+def extract_table_with_camelot(pdf_path, page_number):
+    """ Try extracting table using Camelot (works for structured PDFs). """
+    tables = camelot.read_pdf(pdf_path, pages=str(page_number))
+    if tables.n > 0:
+        df = tables[0].df  # Convert to DataFrame
+        df.columns = df.iloc[0] # Set first row as header
+        df = df[1:].reset_index(drop=True) # Remove first row
+        desc_col = next((col for col in df.columns if 'description' in col.lower()), None)
+        qty_col = next((col for col in df.columns if 'qty' in col.lower()), None)
+        if desc_col and qty_col and "Qty" in df.columns:
+          #remove the rows above "TOTAL:"
+          idx = df[df.apply(lambda row: row.astype(str).str.contains('TOTAL:', case=False, na=False).any(), axis=1)].index
+          if not idx.empty and idx[0] > 0:
+              df = df.iloc[:idx[0]]  # Keep only the rows above "total"
+          df_filtered = df[[desc_col, qty_col]]
+          df_filtered = df_filtered.copy()
+          sku_pattern = r"\(([^)]+)\)\s*HSN:"
+          # df_filtered["sku"] = df_filtered[desc_col].str.extract(sku_pattern)
+          df_filtered.loc[:, "sku"] = (
+              df_filtered[desc_col]
+              .str.extract(sku_pattern)[0]  # Extract the first matched group
+              .astype(str)
+              .str.replace(r"\s+", " ", regex=True)  # Remove newlines and extra spaces
+              .str.strip()  # Trim spaces
+          )
+          df_filtered.drop(columns=desc_col, inplace=True, errors="ignore")
+          return df_filtered.to_dict(orient='records')
+    return None
 
 def extract_order_details(text, second_page_flag= False):
     """Extract Order ID, SKU, and Quantity from text."""
@@ -33,15 +61,15 @@ def clean_text(text):
     text = text.replace("—", "-")  # Replace OCR misrecognized dashes
     return text
 
-def extract_text_from_page(page):
+def extract_text_from_page(page, ocr=False):
     """Extract text using PyMuPDF or OCR if necessary."""
     text = page.get_text("text")
-    # if not text.strip():
-    #     # Convert page to image and apply OCR
-    #     pix = page.get_pixmap()
-    #     image = convert_from_path(pdf_path, first_page=page.number+1, last_page=page.number+1)[0]
-    #     custom_config = r'--oem 3 --psm 6'
-    #     text = pytesseract.image_to_string(image, config = custom_config)
+    if not text.strip() and ocr:
+        # Convert page to image and apply OCR
+        pix = page.get_pixmap()
+        image = convert_from_path(pdf_path, first_page=page.number+1, last_page=page.number+1)[0]
+        custom_config = r'--oem 3 --psm 6'
+        text = pytesseract.image_to_string(image, config = custom_config)
     return clean_text(text)
 
 def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
@@ -63,7 +91,10 @@ def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
             if orderid:
                 orderid = orderid.replace("-","")
                 orderid = f"{orderid[:3]}-{orderid[3:10]}-{orderid[10:]}"
-                order_details = {orderid: [{"sku": d["sku"], "qty": d["quantity-purchased"]} for d in final_output_dict if d["order-id"] == orderid]}
+                order_details = {orderid: [{"sku": d["sku"], "Qty": d["quantity-purchased"]} for d in final_output_dict if d["order-id"] == orderid]}
+                #second preference grabbing order details from camelot
+                if not order_details[orderid]:
+                    order_details[orderid] = extract_table_with_camelot(pdf_path, i+1)
                 if orderid not in order_pages and not skip_page_for_now:
                     order_pages[orderid] = []
                 elif orderid not in order_pages and skip_page_for_now:
@@ -105,7 +136,9 @@ def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
                   writer.add_page(reader.pages[page_num])
             
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid}.pdf")
-            order_pages[orderid].append({"output_pdf_location": output_pdf_path})
+            for i in order_pages[orderid]: 
+              if isinstance(i, list):
+                i[0]["output_pdf_location"] = output_pdf_path
             with open(output_pdf_path, "wb") as output_pdf:
                 writer.write(output_pdf)
             with open("logs/logfile_amazon.txt", "a+", encoding="utf-8") as log_file:
@@ -134,7 +167,33 @@ if __name__ == "__main__":
     # Example usage
     warnings.filterwarnings("ignore", category=UserWarning, module="camelot.parsers.base")
     pdf_path = "amazon_final_integrate/amazon.pdf"  # Replace with your PDF file path
-    output_folder = "outputs_test/amazon_output_pdfs"  # Folder to save separated PDFs
+    output_folder = "outputs/amazon_output_pdfs"  # Folder to save separated PDFs
     with open("logs/logfile_amazon.txt", "w+", encoding="utf-8") as log_file:
       log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}\n")
     op = split_pdf_by_orderid(pdf_path, output_folder, final_output_dict)
+    #testing
+    columns = set()
+    for values in op.values():
+      for i in values:
+        if isinstance(i, list):
+          columns.update(i[0].keys())
+
+    # Sort columns (optional)
+    columns = sorted(columns)
+
+    # Open the CSV file for writing
+    with open("outputs/output_amazon.csv", "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        
+        # Write header (first column as "Name" + all extracted columns)
+        writer.writerow(["orderid"] + columns)
+        
+        # Write data rows
+        for key, values in op.items():
+            for v in values:
+              if isinstance(v, list):
+                for j in v:
+                  row = [key] + [j.get(col, "") for col in columns]  # Fill missing columns with empty values
+            writer.writerow(row)
+
+    print("CSV file created successfully!, Closing the Script\n")
