@@ -38,21 +38,15 @@ def extract_table_with_camelot(pdf_path, page_number):
           return df_filtered.to_dict(orient='records')
     return None
 
-def extract_order_details(text, second_page_flag= False):
+def extract_order_details(text):
     """Extract Order ID, SKU, and Quantity from text."""
-    # orderid_match = re.search(r"Order\s*(ld|Id|Number):\s*[^0-9]*?(\d+)\s*[-~]?\s*(\d+)\s*[-~]?\s*(\d+)(?=$|\s|[^0-9])", text, re.IGNORECASE)
-    if not second_page_flag:
-      # orderid_match = re.search(r"Order\s*(1d|ld|Id):\s*[^0-9]*?(\d+)[\s.\-~]*(\d+)[\s.\-~]*(\d+)", text, re.IGNORECASE)
-      orderid_match = re.search(r"Order\s*(1d|ld|Id|Number):\s*[^0-9]*?(\d+)[\s.\-~]*(\d+)[\s.\-~]*(\d+)", text, re.IGNORECASE)
-      first_page_match = re.search(r"Ship to:|Ship From:", text, re.IGNORECASE)
-      
-      orderid = f"{orderid_match.group(2)}-{orderid_match.group(3)}-{orderid_match.group(4)}" if orderid_match else None
-      number_or_id = orderid_match.group(1) if orderid_match else None
-    else:
-      orderid_match = re.search(r"Order\s*(1d|ld|Id|Number):\s*[^0-9]*?(\d+)[\s.\-~]*(\d+)[\s.\-~]*(\d+)", text, re.IGNORECASE)
-      number_or_id = None
-      first_page_match = re.search(r"Ship to:|Ship From:", text, re.IGNORECASE) 
-    return orderid, number_or_id, bool(first_page_match)
+    # need to change the regex pattern to match the order id
+    orderid_match = re.search(r"Order No\s*:\s*([\w\d]+)", text, re.IGNORECASE)
+    scanner_page_match = re.search(r"Ship to:|Ship From:", text, re.IGNORECASE)
+    
+    orderid = orderid_match.group(1) if orderid_match else None
+    
+    return orderid, bool(scanner_page_match)
   
 def clean_text(text):
     """Clean text by removing extra spaces, newlines, etc."""
@@ -61,10 +55,10 @@ def clean_text(text):
     text = text.replace("—", "-")  # Replace OCR misrecognized dashes
     return text
 
-def extract_text_from_page(page, ocr=False):
+def extract_text_from_page(page):
     """Extract text using PyMuPDF or OCR if necessary."""
     text = page.get_text("text")
-    if not text.strip() and ocr:
+    if not text.strip():
         # Convert page to image and apply OCR
         pix = page.get_pixmap()
         image = convert_from_path(pdf_path, first_page=page.number+1, last_page=page.number+1)[0]
@@ -85,35 +79,25 @@ def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
     
     for i, page in enumerate(doc):
         text = extract_text_from_page(page)
-        #if first page text is empty which is always empty go find order id on the next page or skip that page for now with detals of the page in 
         if text:
-            orderid, number_or_id, first_page_match = extract_order_details(text)
+            orderid, scanner_page_match = extract_order_details(text)
+            if orderid != prev_order_id:
+              if orderid:
+                prev_order_id = orderid
             if orderid:
-                orderid = orderid.replace("-","")
-                orderid = f"{orderid[:3]}-{orderid[3:10]}-{orderid[10:]}"
-                order_details = {orderid: [{"sku": d["sku"], "Qty": d["quantity-purchased"]} for d in final_output_dict if d["order-id"] == orderid]}
-                #second preference grabbing order details from camelot
+                order_details = {orderid: [{"sku": d["Vendor Style Code"], "Qty": d["Total Qty"], "Items": d["Total Items"]} for d in final_output_dict if d["Order ID"] == orderid]}
                 if not order_details[orderid]:
-                    order_details[orderid] = extract_table_with_camelot(pdf_path, i+1)
+                  order_details[orderid] = extract_table_with_camelot(pdf_path, i+1)
                 if orderid not in order_pages and not skip_page_for_now:
                     order_pages[orderid] = []
                 elif orderid not in order_pages and skip_page_for_now:
-                    #check if order_details is appended in orderpages for that id.
                     order_pages[orderid] = skip_page_for_now
-                    order_pages[orderid].append(order_details[orderid])
-                    order_details = {}
                 order_pages[orderid].append(i)
                 skip_page_for_now = []
-                prev_order_id = orderid
-            elif number_or_id and number_or_id != "Number":
-                skip_page_for_now = [i]
-            elif first_page_match:
+            elif scanner_page_match:
                 skip_page_for_now = [i]
             else:
                 order_pages[prev_order_id].append(i)
-                prev_order_id = ""
-        else:
-          skip_page_for_now = [i]
         if order_details and not skip_page_for_now:
             if orderid:
                 order_pages[orderid].append(order_details[orderid])
@@ -121,9 +105,8 @@ def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
             else:
                 order_pages[prev_order_id].append(order_details[orderid])
                 order_details = {}
-        with open("logs/logfile_amazon.txt", "a+", encoding="utf-8") as log_file:
+        with open("logs/logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
           log_file.write(f"{i+1} page completed.\n")
-          log_file.write(f"found {orderid} in {i+1} page with {order_details}\n" if not skip_page_for_now else f"skipping page {i}\n")
     
     # Create PDFs for each OrderID
     with open(pdf_path, "rb") as infile:
@@ -139,33 +122,33 @@ def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
             order_pages[orderid].append({"output_pdf_location" : output_pdf_path})
             with open(output_pdf_path, "wb") as output_pdf:
                 writer.write(output_pdf)
-            with open("logs/logfile_amazon.txt", "a+", encoding="utf-8") as log_file:
-              log_file.write(f"Saved: {output_pdf_path}\n")
+            with open("logs/logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
+                log_file.write(f"Saved: {output_pdf_path}\n")
     return order_pages
 
-def txt_to_dataframe(file_path):
+def excel_to_dataframe(file_path):
     """
     Reads a tab-delimited .txt file and converts it to a Pandas DataFrame.
     :param file_path: Path to the .txt file
     :return: Pandas DataFrame
     """
-    df = pd.read_csv(file_path, delimiter='\t')
+    df = pd.read_excel(file_path)
     return df
 
 def grab_required_fields(data):
-    required_columns = ["order-id", "sku", "quantity-purchased"]  # Replace with actual column names
+    required_columns = ["Order ID", "Vendor Style Code", "Total Items", "Total Qty"]  # Replace with actual column names
     filtered_data = [{col: row[col] for col in required_columns if col in row} for row in data]
     return filtered_data
 
 
 if __name__ == "__main__":
-    file_path = "amazon_final_integrate/amazon.txt"  # Replace with the actual file path
-    df = txt_to_dataframe(file_path)
+    file_path = "first_cry_final_integrate/firstcry.xlsx"  # Replace with the actual file path
+    df = excel_to_dataframe(file_path)
     final_output_dict = grab_required_fields(df.to_dict(orient="records"))
     # Example usage
     warnings.filterwarnings("ignore", category=UserWarning, module="camelot.parsers.base")
-    pdf_path = "amazon_final_integrate/amazon.pdf"  # Replace with your PDF file path
-    output_folder = "outputs/amazon_output_pdfs"  # Folder to save separated PDFs
-    with open("logs/logfile_amazon.txt", "w+", encoding="utf-8") as log_file:
+    pdf_path = "first_cry_final_integrate/firstcry.pdf"  # Replace with your PDF file path
+    output_folder = "outputs/firstcry_output_pdfs"  # Folder to save separated PDFs
+    with open("logs/logfile_firstcry.txt", "w+", encoding="utf-8") as log_file:
       log_file.write(f"Starting the log for mentioned time:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}\n")
     op = split_pdf_by_orderid(pdf_path, output_folder, final_output_dict)
