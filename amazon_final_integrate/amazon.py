@@ -105,6 +105,7 @@ def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
                   writer.add_page(reader.pages[page_num])
             
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid}.pdf")
+            order_pages[orderid].append({"output_pdf_location": output_pdf_path})
             with open(output_pdf_path, "wb") as output_pdf:
                 writer.write(output_pdf)
             with open("logs/logfile_amazon.txt", "a+", encoding="utf-8") as log_file:
