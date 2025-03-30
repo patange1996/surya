@@ -43,7 +43,7 @@ def extract_table_with_camelot(pdf_path, page_number):
 def extract_order_details(text):
     """Extract Order ID, SKU, and Quantity from text."""
     # orderid_match = re.search(r"Order\s*(ld|Id|Number):\s*[^0-9]*?(\d+)\s*[-~]?\s*(\d+)\s*[-~]?\s*(\d+)(?=$|\s|[^0-9])", text, re.IGNORECASE)
-    orderid_match = re.search(r"Order\s*(ld|Id|Number):\s*[^0-9]*?(\d+)[\s.\-~]*(\d+)[\s.\-~]*(\d+)", text, re.IGNORECASE)
+    orderid_match = re.search(r"Order\s*(1d|ld|Id|Number):\s*[^0-9]*?(\d+)[\s.\-~]*(\d+)[\s.\-~]*(\d+)", text, re.IGNORECASE)
     first_page_match = re.search(r"Ship to:|Ship From:", text, re.IGNORECASE)
     
     orderid = f"{orderid_match.group(2)}-{orderid_match.group(3)}-{orderid_match.group(4)}" if orderid_match else None
