@@ -5,17 +5,17 @@ import re, csv
 from itertools import zip_longest
 from datetime import datetime
 
-def extract_text_with_fitz(input_pdf, page_num):
+def extract_text_with_fitz(input_pdf, page_num, read_all = False):
     doc = fitz.open(input_pdf)
 
     # Extract text from each page
+    data_dict = {}
     page = doc[page_num]
     text = page.get_text("text")
     match = re.search(r"Product Details\n(.*?)\nTAX INVOICE", text, re.DOTALL)
-    purchase_order_no = re.search(r"Purchase Order No.(.*?)Invoice", text.replace("\n",""), re.IGNORECASE)
-    if purchase_order_no:
-      purchase_order_no = purchase_order_no.group(1)
-    if match:
+    purchase_order_no = re.findall(r"Purchase Order No.(.*?)Invoice", text.replace("\n",""), re.IGNORECASE)
+    # if purchase_order_no:
+    if match and purchase_order_no and read_all:
       lines = match.group(1).split("\n")
 
       # Remove unwanted values
@@ -29,6 +29,9 @@ def extract_text_with_fitz(input_pdf, page_num):
 
       # Create a dictionary
       data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
+      data_dict["purchase_order_no"] = purchase_order_no
+      return data_dict
+    elif purchase_order_no:
       data_dict["purchase_order_no"] = purchase_order_no
       return data_dict
     else:
@@ -94,16 +97,14 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
     order_details = {}
 
     for page_num, page in enumerate(doc):
-        if result_dict := extract_text_with_fitz(input_pdf, page_num):
-            if result_dict.get("Order No.", None):
-                istext = bool(re.fullmatch(r"[a-zA-Z]+", result_dict.get("Order No.", [None])[0]))
-                if istext:
-                  result_dict = extract_text_with_camelot(input_pdf, page_num+1)
-            else:
-                result_dict = extract_text_with_camelot(input_pdf, page_num+1)
-        else:
-            result_dict = extract_text_with_camelot(input_pdf, page_num+1)
-        if result_dict.get("Order No.", None):
+        result_dict = extract_text_with_fitz(input_pdf, page_num)
+            # if result_dict.get("Order No.", None):
+            #     istext = bool(re.fullmatch(r"[a-zA-Z]+", result_dict.get("Order No.", [None])[0]))
+            #     if istext:
+            #       result_dict = extract_text_with_camelot(input_pdf, page_num+1)
+            # else:
+            #     result_dict = extract_text_with_camelot(input_pdf, page_num+1)
+        if result_dict.get("purchase_order_no", None):
             new_doc = fitz.open()  # Create a new PDF document
             page = doc[page_num]  # Get current page
             rect = page.rect  # Get original page size
@@ -124,17 +125,28 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
             df = pd.DataFrame(result_dict)
             orderid_name = "_".join(set([i.split("_")[0] for i in result_dict.get("Order No.", [])]))
             for i in df.to_dict(orient="records"):
-              orderid = i.get("Order No.", None)
+              orderid = i.get("purchase_order_no")
               # orderid = orderid.split("_")[0]
-              order_details = {orderid: [{"sku": d["SKU"], "Qty": d["Qty."], "AWB": d["AWB"]} for d in final_output_dict if d["Sub Order No."] == orderid]}
-              order_pages[orderid] = []
-              order_pages[orderid].append(order_details[orderid])
-              order_details = {} 
+              order_details = {orderid: [{"sku": d["SKU"], "Qty": d["Qty."], "AWB": d["AWB"]} for d in final_output_dict if d["Sub Order No."].split("_")[0] == orderid]}
+              if not order_details[orderid]:
+                camelot_dict = extract_text_with_fitz(input_pdf, page_num, read_all=True)
+                camelot_df = pd.DataFrame(camelot_dict)
+                df_filtered = camelot_df[camelot_df['Order No.'].str.startswith(orderid)]
+                order_pages[orderid].append({"sku":"", "qty":"", "AWB":""})
+              if str(order_details[orderid][0].get("AWB")) != "nan":
+                order_pages[order_details[orderid][0]["AWB"]] = []
+                order_pages[order_details[orderid][0]["AWB"]].append(order_details[orderid])
+                prev_awb = order_details[orderid][0].get("AWB", None)
+                order_details = {}
+              else:
+                order_pages[prev_awb][0].append(order_details[orderid][0])
+                order_details = {} 
               with open("logs/logfile_meesho.txt", "a+", encoding="utf-8") as log_file:
                 log_file.write(f"Order ID: {orderid}, SKU: {i.get("SKU", None)}, Qty: {i.get("Qty", None)}\n")
                 log_file.write("-" * 50 + "\n")
-            output_pdf_path = os.path.join(output_folder, f"Order_{orderid_name}.pdf")
-            order_pages[orderid].append({"output_pdf_location" : output_pdf_path})
+            output_pdf_path = os.path.join(output_folder, f"Order_{prev_awb}.pdf")
+            order_pages[prev_awb].append({"output_pdf_location" : output_pdf_path})
+            # order_pages[orderid].append({"output_pdf_location" : output_pdf_path})
             new_doc.save(output_pdf_path)
             with open("logs/logfile_meesho.txt", "a+", encoding="utf-8") as log_file:
               log_file.write(f"✅ Split PDF saved as: {output_pdf_path}\n")
