@@ -12,6 +12,7 @@ def extract_text_with_fitz(input_pdf, page_num, read_all = False):
     data_dict = {}
     page = doc[page_num]
     text = page.get_text("text")
+    awb = re.search(r"(\S{15})\s*Product Details", text.replace("\n","", re.IGNORECASE))
     match = re.search(r"Product Details\n(.*?)\nTAX INVOICE", text, re.DOTALL)
     purchase_order_no = re.findall(r"Purchase Order No.(.*?)Invoice", text.replace("\n",""), re.IGNORECASE)
     # if purchase_order_no:
@@ -30,6 +31,7 @@ def extract_text_with_fitz(input_pdf, page_num, read_all = False):
       # Create a dictionary
       data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
       data_dict["purchase_order_no"] = purchase_order_no
+      data_dict["AWB"]=awb.group(1)
       return data_dict
     elif purchase_order_no:
       data_dict["purchase_order_no"] = purchase_order_no
@@ -132,7 +134,7 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
                 camelot_dict = extract_text_with_fitz(input_pdf, page_num, read_all=True)
                 camelot_df = pd.DataFrame(camelot_dict)
                 df_filtered = camelot_df[camelot_df['Order No.'].str.startswith(orderid)]
-                order_pages[orderid].append({"sku":"", "qty":"", "AWB":""})
+                order_details[orderid].append({"sku":df_filtered["SKU"][0], "Qty":df_filtered["Qty"][0], "AWB":df_filtered["AWB"][0]})
               if str(order_details[orderid][0].get("AWB")) != "nan":
                 order_pages[order_details[orderid][0]["AWB"]] = []
                 order_pages[order_details[orderid][0]["AWB"]].append(order_details[orderid])
