@@ -25,7 +25,8 @@ def extract_table_with_camelot(pdf_path, page_number):
               df = df.iloc[:idx[0]]  # Keep only the rows above "total"
           df_filtered = df[[desc_col, qty_col]]
           df_filtered = df_filtered.copy()
-          sku_pattern = r"\(([^)]+)\)\s*HSN:"
+          # sku_pattern = r"\(([^)]+)\)\s*HSN:"
+          sku_pattern = r"\|\s*[^|]*?\(\s*(.*?)\s*\)(?=\s*HSN:|)"
           # df_filtered["sku"] = df_filtered[desc_col].str.extract(sku_pattern)
           df_filtered.loc[:, "sku"] = (
               df_filtered[desc_col]
