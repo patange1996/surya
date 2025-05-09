@@ -1,151 +1,151 @@
-Starting the log for mentioned time:2025-05-10 00:09:54
-Order ID: OD333683245728429100, SKU: sku, Qty: 1
+Starting the log for mentioned time:2025-05-10 00:21:29
+Order ID: OD333683245728429100, SKU: GL-280 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333683245728429100.pdf
-Order ID: OD333683202159347100, SKU: sku, Qty: 1
+Order ID: OD333683202159347100, SKU: Silicone Heart Shape Molds , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333683202159347100.pdf
-Order ID: OD333683096959992100, SKU: sku, Qty: 1
+Order ID: OD333683096959992100, SKU: GL-208 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333683096959992100.pdf
-Order ID: OD433683093431646100, SKU: sku, Qty: 1
+Order ID: OD433683093431646100, SKU: Lid37HoneyComb , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433683093431646100.pdf
-Order ID: OD433682713245953100, SKU: sku, Qty: 1
+Order ID: OD433682713245953100, SKU: 3_RabbitEarBand_Rainbow , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433682713245953100.pdf
-Order ID: OD433682586848038100, SKU: sku, Qty: 1
+Order ID: OD433682586848038100, SKU: WaistBelt-PinBuckle-Coffee , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433682586848038100.pdf
-Order ID: OD333682534812443100, SKU: sku, Qty: 1
+Order ID: OD333682534812443100, SKU: Goggles-CrownStyle-Pink , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333682534812443100.pdf
-Order ID: OD433682449912062100, SKU: sku, Qty: 1
+Order ID: OD433682449912062100, SKU: Brooch-X003 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433682449912062100.pdf
-Order ID: OD333682446538571100, SKU: sku, Qty: 1
+Order ID: OD333682446538571100, SKU: JACQUARD-HB1 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333682446538571100.pdf
-Order ID: OD333682384041695100, SKU: sku, Qty: 1
+Order ID: OD333682384041695100, SKU: Bracelet-Design-1 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333682384041695100.pdf
-Order ID: OD433682245670942100, SKU: sku, Qty: 1
+Order ID: OD433682245670942100, SKU: BabyKneeSocks_Set 1 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433682245670942100.pdf
-Order ID: OD333682204292130100, SKU: sku, Qty: 1
+Order ID: OD333682204292130100, SKU: Anchor_BottleOpener , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333682204292130100.pdf
-Order ID: OD433682037627458100, SKU: sku, Qty: 1
+Order ID: OD433682037627458100, SKU: BROOCH-S166 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433682037627458100.pdf
-Order ID: OD333681989917143100, SKU: sku, Qty: 1
+Order ID: OD333681989917143100, SKU: Goggles-PigStyle-Green , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681989917143100.pdf
-Order ID: OD333681971023206100, SKU: sku, Qty: 1
+Order ID: OD333681971023206100, SKU: Brooch-Queen-NewGolden , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681971023206100.pdf
-Order ID: OD433681956677097100, SKU: sku, Qty: 1
+Order ID: OD433681956677097100, SKU: LoveTravel_Grey , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681956677097100.pdf
-Order ID: OD333681925072440100, SKU: sku, Qty: 1
+Order ID: OD333681925072440100, SKU: Brooch-S52 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681925072440100.pdf
-Order ID: OD333681900569929100, SKU: sku, Qty: 1
+Order ID: OD333681900569929100, SKU: Goggles-FrenzyRound-6-Green , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681900569929100.pdf
-Order ID: OD433681887674411100, SKU: sku, Qty: 1
+Order ID: OD433681887674411100, SKU: Brooch-X003 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681887674411100.pdf
-Order ID: OD433681850215564100, SKU: sku, Qty: 1
+Order ID: OD433681850215564100, SKU: CN-05 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681850215564100.pdf
-Order ID: OD433681831308084100, SKU: sku, Qty: 1
+Order ID: OD433681831308084100, SKU: BowHeadBand-Color1028 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681831308084100.pdf
-Order ID: OD433681824446489100, SKU: sku, Qty: 1
+Order ID: OD433681824446489100, SKU: TinyWallet_Pink , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681824446489100.pdf
-Order ID: OD433681792171603100, SKU: sku, Qty: 1
+Order ID: OD433681792171603100, SKU: HB-Flower-Peach , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681792171603100.pdf
-Order ID: OD333681609103971100, SKU: sku, Qty: 1
+Order ID: OD333681609103971100, SKU: GL-208 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681609103971100.pdf
-Order ID: OD333681601287257100, SKU: sku, Qty: 1
+Order ID: OD333681601287257100, SKU: HB-Flower-Pack of 2 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681601287257100.pdf
-Order ID: OD333681595724682100, SKU: sku, Qty: 1
+Order ID: OD333681595724682100, SKU: Goggles-TriangleCorner-LightBlue , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681595724682100.pdf
-Order ID: OD333681594845176100, SKU: sku, Qty: 1
+Order ID: OD333681594845176100, SKU: PlugCombo_8 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681594845176100.pdf
-Order ID: OD333681574470712100, SKU: sku, Qty: 1
+Order ID: OD333681574470712100, SKU: ICB-01-12 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681574470712100.pdf
-Order ID: OD333681572651309100, SKU: sku, Qty: 1
+Order ID: OD333681572651309100, SKU: BowHeadBand-Color1008 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681572651309100.pdf
-Order ID: OD333681571145348100, SKU: sku, Qty: 1
+Order ID: OD333681571145348100, SKU: 2-HB-Turbon-PinkAndGrey , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681571145348100.pdf
-Order ID: OD333681557063147100, SKU: sku, Qty: 1
+Order ID: OD333681557063147100, SKU: GL-279 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681557063147100.pdf
-Order ID: OD333681539271895100, SKU: sku, Qty: 1
+Order ID: OD333681539271895100, SKU: BROOCH-S139 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681539271895100.pdf
-Order ID: OD433681509504204100, SKU: sku, Qty: 1
+Order ID: OD433681509504204100, SKU: Goggles-RabbitStyle-Pink , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681509504204100.pdf
-Order ID: OD333681477370594100, SKU: sku, Qty: 1
+Order ID: OD333681477370594100, SKU: SmallWallet_LPink , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681477370594100.pdf
-Order ID: OD333681475181174100, SKU: sku, Qty: 1
+Order ID: OD333681475181174100, SKU: BROOCH-S166 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681475181174100.pdf
-Order ID: OD333681438499691100, SKU: sku, Qty: 1
+Order ID: OD333681438499691100, SKU: Brooch-HollowFlower-Gold , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681438499691100.pdf
-Order ID: OD333681411538214100, SKU: sku, Qty: nan
+Order ID: OD333681411538214100, SKU: CrownStarHairBand_Gold , Qty: nan
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681411538214100.pdf
-Order ID: OD333681388278002100, SKU: sku, Qty: 1
+Order ID: OD333681388278002100, SKU: Brooch-SmallDiamond-N8 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681388278002100.pdf
-Order ID: OD433681368064621100, SKU: sku, Qty: 1
+Order ID: OD433681368064621100, SKU: Brooch-Glass-Green , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681368064621100.pdf
-Order ID: OD333681327689059100, SKU: sku, Qty: 1
+Order ID: OD333681327689059100, SKU: Brooch-Flower-6208Garland , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681327689059100.pdf
-Order ID: OD433681267185278100, SKU: sku, Qty: 1
+Order ID: OD433681267185278100, SKU: WaistBelt-White-PD38 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681267185278100.pdf
-Order ID: OD333681241719700100, SKU: sku, Qty: 1
+Order ID: OD333681241719700100, SKU: GL-123$ , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681241719700100.pdf
-Order ID: OD433681232907752100, SKU: sku, Qty: 1
+Order ID: OD433681232907752100, SKU: HeadBand-DoubleFlower-BigRed , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681232907752100.pdf
-Order ID: OD433681210653960100, SKU: sku, Qty: 1
+Order ID: OD433681210653960100, SKU: Goggles-Modern-Red , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681210653960100.pdf
-Order ID: OD333681138999838100, SKU: sku, Qty: 1
+Order ID: OD333681138999838100, SKU: WineOpener_Brown , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681138999838100.pdf
-Order ID: OD333681103039721100, SKU: sku, Qty: 1
+Order ID: OD333681103039721100, SKU: PlainCap_Gray , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681103039721100.pdf
-Order ID: OD433681075695961100, SKU: sku, Qty: 1
+Order ID: OD433681075695961100, SKU: BROOCH-S63 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681075695961100.pdf
-Order ID: OD433681062740928100, SKU: sku, Qty: 1
+Order ID: OD433681062740928100, SKU: BROOCH-S62 , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681062740928100.pdf
-Order ID: OD433681018932808100, SKU: sku, Qty: 1
+Order ID: OD433681018932808100, SKU: 4-HairPin-GreyNetYarnSet , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681018932808100.pdf
-Order ID: OD333680970093694400, SKU: sku, Qty: 1
+Order ID: OD333680970093694400, SKU: Brooch-5Pearl-Leaf , Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333680970093694400.pdf

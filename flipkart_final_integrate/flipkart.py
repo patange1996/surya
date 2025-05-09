@@ -5,6 +5,7 @@ import re, csv
 from itertools import zip_longest
 from datetime import datetime
 import numpy as np
+from pydash import clean as _c
 
 def extract_text_with_fitz(input_pdf, page_num, only_orderid=False):
     doc = fitz.open(input_pdf)
@@ -120,10 +121,10 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
               orderid = i.get("Order No.", None)
               order_details = {orderid: [{"sku": d["SKU"], "Qty": d["Quantity"]} for d in final_output_dict if d["Order Id"] == orderid]}
               if not order_details[orderid]:
-                sku = i.get(" ID | Description", None).split("|")[0].split(" ")[1] if i.get(" ID | Description", None) else ""
+                sku = re.sub(r'^\d\s*', '', i.get(" ID | Description", None).split("|")[0]) if i.get(" ID | Description", None) else ""
                 order_details[orderid] = {
-                "sku" : sku,
-                "Qty" : i.get("QTY", None),
+                "sku" : _c(sku),
+                "Qty" : _c(i.get("QTY", None)),
               }
               order_pages[str(orderid)] = order_details[orderid]
               with open("logs/logfile_flipkart.txt", "a+", encoding="utf-8") as log_file:
