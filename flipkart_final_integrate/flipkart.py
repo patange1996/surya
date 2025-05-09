@@ -6,13 +6,18 @@ from itertools import zip_longest
 from datetime import datetime
 import numpy as np
 
-def extract_text_with_fitz(input_pdf, page_num):
+def extract_text_with_fitz(input_pdf, page_num, only_orderid=False):
     doc = fitz.open(input_pdf)
 
     # Extract text from each page
-    page = doc[page_num]
+    if only_orderid:
+      page = doc[page_num-1]
+    else:
+      page = doc[page_num]
     text = page.get_text("text")
     order_id_match = re.search(r"E-Kart Logistics\s*\n*(OD\d+)", text)
+    if only_orderid:
+      return order_id_match.group(1)
     match = re.search(r"SKU(.*?)Invoice", text, re.DOTALL)
     if match:
       lines = match.group(1).split("\n")
@@ -58,13 +63,15 @@ def extract_text_with_camelot(pdf_path, page_number):
         if filtered_df.empty:
           return {}
         filtered_df = filtered_df.replace(r'^\s*$', np.nan, regex=True)
-        filtered_df = filtered_df.infer_objects(copy=False)
         filtered_df = filtered_df.where(pd.notnull(filtered_df), np.nan)
         filtered_df.dropna(how='all', inplace=True)  
         filtered_df.dropna(axis=1, how='all', inplace=True)
         filtered_df.reset_index(drop=True, inplace=True)
         filtered_df.columns = filtered_df.iloc[0]
         filtered_df = filtered_df[1:]
+        order_id = extract_text_with_fitz(pdf_path, page_number, only_orderid=True)
+        filtered_df.loc[:, 'Order No.'] = [order_id]
+        filtered_df = filtered_df.rename(columns={'SKU ID | Description': ' ID | Description'})
         return filtered_df.to_dict(orient='list')
     else:
       return {} 
@@ -120,7 +127,7 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
               }
               order_pages[str(orderid)] = order_details[orderid]
               with open("logs/logfile_flipkart.txt", "a+", encoding="utf-8") as log_file:
-                log_file.write(f"Order ID: {orderid}, SKU: {i.get("sku", None)}, Qty: {i.get("QTY", None)}\n")
+                log_file.write(f"Order ID: {orderid}, SKU: sku, Qty: {i.get("QTY", None)}\n")
                 log_file.write("-" * 50 + "\n")
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid_name}.pdf")
             new_doc.save(output_pdf_path)
@@ -156,6 +163,7 @@ def grab_required_fields(data):
   
 
 if __name__ == "__main__":
+    pd.set_option('future.no_silent_downcasting', True)
     file_path = "flipkart_final_integrate/flipkart.csv"  # Replace with the actual file path
     df = csv_to_dataframe(file_path)
     final_output_dict = grab_required_fields(df.to_dict(orient="records"))

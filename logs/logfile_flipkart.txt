@@ -1,13 +1,109 @@
-Starting the log for mentioned time:2025-05-09 21:58:55
-Order ID: OD333683245728429100, SKU: None, Qty: 1
+Starting the log for mentioned time:2025-05-10 00:04:38
+Order ID: OD333683245728429100, SKU: sku, Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333683245728429100.pdf
-❌ Order ID not found in the page 1. Hence concatenating it with previous pdf.
-Order ID: OD333683096959992100, SKU: None, Qty: 1
+Order ID: OD333683202159347100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333683202159347100.pdf
+Order ID: OD333683096959992100, SKU: sku, Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333683096959992100.pdf
-❌ Order ID not found in the page 3. Hence concatenating it with previous pdf.
-Order ID: OD433682713245953100, SKU: None, Qty: 1
+Order ID: OD433683093431646100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433683093431646100.pdf
+Order ID: OD433682713245953100, SKU: sku, Qty: 1
 --------------------------------------------------
 ✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433682713245953100.pdf
-❌ Order ID not found in the page 5. Hence concatenating it with previous pdf.
+Order ID: OD433682586848038100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433682586848038100.pdf
+Order ID: OD333682534812443100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333682534812443100.pdf
+Order ID: OD433682449912062100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433682449912062100.pdf
+Order ID: OD333682446538571100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333682446538571100.pdf
+Order ID: OD333682384041695100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333682384041695100.pdf
+Order ID: OD433682245670942100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433682245670942100.pdf
+Order ID: OD333682204292130100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333682204292130100.pdf
+Order ID: OD433682037627458100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433682037627458100.pdf
+Order ID: OD333681989917143100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681989917143100.pdf
+Order ID: OD333681971023206100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681971023206100.pdf
+Order ID: OD433681956677097100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681956677097100.pdf
+Order ID: OD333681925072440100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681925072440100.pdf
+Order ID: OD333681900569929100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681900569929100.pdf
+Order ID: OD433681887674411100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681887674411100.pdf
+Order ID: OD433681850215564100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681850215564100.pdf
+Order ID: OD433681831308084100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681831308084100.pdf
+Order ID: OD433681824446489100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681824446489100.pdf
+Order ID: OD433681792171603100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681792171603100.pdf
+Order ID: OD333681609103971100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681609103971100.pdf
+Order ID: OD333681601287257100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681601287257100.pdf
+Order ID: OD333681595724682100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681595724682100.pdf
+Order ID: OD333681594845176100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681594845176100.pdf
+Order ID: OD333681574470712100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681574470712100.pdf
+Order ID: OD333681572651309100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681572651309100.pdf
+Order ID: OD333681571145348100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681571145348100.pdf
+Order ID: OD333681557063147100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681557063147100.pdf
+Order ID: OD333681539271895100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681539271895100.pdf
+Order ID: OD433681509504204100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD433681509504204100.pdf
+Order ID: OD333681477370594100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681477370594100.pdf
+Order ID: OD333681475181174100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681475181174100.pdf
+Order ID: OD333681438499691100, SKU: sku, Qty: 1
+--------------------------------------------------
+✅ Split PDF saved as: outputs/flipkart_output_pdfs/Order_OD333681438499691100.pdf
