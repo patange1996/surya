@@ -4,6 +4,7 @@ import pandas as pd
 import re, csv
 from itertools import zip_longest
 from datetime import datetime
+import numpy as np
 
 def extract_text_with_fitz(input_pdf, page_num):
     doc = fitz.open(input_pdf)
@@ -15,6 +16,7 @@ def extract_text_with_fitz(input_pdf, page_num):
     match = re.search(r"SKU(.*?)Invoice", text, re.DOTALL)
     if match:
       lines = match.group(1).split("\n")
+      # lines = re.sub(r'FMPC.*', '', match.group(1), flags=re.DOTALL)
 
       # Remove unwanted values
       filtered_lines = lines[:4]
@@ -27,51 +29,43 @@ def extract_text_with_fitz(input_pdf, page_num):
       # Create a dictionary
       data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
       data_dict["Order No."] = [order_id_match.group(1)]
+      #check if qty is a digit
+      if not re.search(r"^\d+$", data_dict["QTY"][0]):
+        return {}
       return data_dict
     else:
       return {}
 
 def extract_text_with_camelot(pdf_path, page_number):
     """ Try extracting table using Camelot (works for structured PDFs). """
-    tables = camelot.read_pdf(pdf_path, pages=str(page_number))
+    tables = camelot.read_pdf(pdf_path, pages=str(page_number), flavor="lattice")
     if tables.n > 0:
         digit_match = re.compile(r"\d_\d", re.IGNORECASE)
         df = tables[0].df
-        filtered_df = df[df.apply(lambda row: row.astype(str).str.contains("Product Details", case=False, na=False).any(), axis=1)]
+        # Find indices of rows where any cell contains "SKU"
+        sku_indices = df.index[
+            df.apply(lambda row: row.astype(str).str.contains("SKU", case=False, na=False).any(), axis=1)
+        ].tolist()
+
+        # Include the next row index as well (if within bounds)
+        extended_indices = sku_indices + [i + 1 for i in sku_indices if i + 1 < len(df)]
+
+        # Drop duplicates and sort to maintain order
+        extended_indices = sorted(set(extended_indices))
+
+        # Extract those rows
+        filtered_df = df.loc[extended_indices].reset_index(drop=True)
         if filtered_df.empty:
           return {}
-        text = filtered_df.iloc[(0,0)]
-        # Split the text by newline
-        lines = text.split("\n")
-
-        # Remove unwanted values
-        remove_values = {"Product Details", "Original For Recipient", "TAX INVOICE"}
-        filtered_lines = [line for line in lines if line not in remove_values]
-        
-        #place the key value in the proper position
-        if filtered_lines[4] != "Order No.":
-          filtered_lines.insert(4, "Order No.")
-        order_matching_pos = [i for i, item in enumerate(filtered_lines) if digit_match.search(item)]
-        if order_matching_pos:
-          match_index = order_matching_pos[0]  # Get first match
-
-          if match_index != 9:  # If not already at position 10
-              value = filtered_lines.pop(match_index)  # Remove it
-              if len(filtered_lines) < 10:  # Ensure the list has enough length
-                  filtered_lines.extend([""] * (10 - len(filtered_lines)))  # Fill with empty values if needed
-              if "free size" in filtered_lines[5].lower():
-                  filtered_lines[5] = filtered_lines[5].split("Free Size")[0].strip()
-                  filtered_lines.insert(6, "Free Size")
-                  filtered_lines.pop()
-                  filtered_lines[9] = value  # Insert at position 10          
-        keys = filtered_lines[:5]
-        values = filtered_lines[5:]
-        
-        value_chunks = [values[i:i+5] for i in range(0, len(values), 5)]
-
-        # Create a dictionary
-        data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
-        return data_dict 
+        filtered_df = filtered_df.replace(r'^\s*$', np.nan, regex=True)
+        filtered_df = filtered_df.infer_objects(copy=False)
+        filtered_df = filtered_df.where(pd.notnull(filtered_df), np.nan)
+        filtered_df.dropna(how='all', inplace=True)  
+        filtered_df.dropna(axis=1, how='all', inplace=True)
+        filtered_df.reset_index(drop=True, inplace=True)
+        filtered_df.columns = filtered_df.iloc[0]
+        filtered_df = filtered_df[1:]
+        return filtered_df.to_dict(orient='list')
     else:
       return {} 
 

@@ -16,7 +16,7 @@ def extract_table_with_camelot(pdf_path, page_number):
         df = tables[0].df  # Convert to DataFrame
         df.columns = df.iloc[0] # Set first row as header
         df = df[1:].reset_index(drop=True) # Remove first row
-        desc_col = next((col for col in df.columns if 'description' in col.lower()), None)
+        desc_col = next((col for col in df.columns if 'item name' in col.lower()), None)
         qty_col = next((col for col in df.columns if 'qty' in col.lower()), None)
         if desc_col and qty_col and "Qty" in df.columns:
           #remove the rows above "TOTAL:"
