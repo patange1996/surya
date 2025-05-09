@@ -129,7 +129,7 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
                 log_file.write(f"did not get the {orderid} from csv, getting it from pdf itself")
               order_pages[str(orderid)] = order_details[orderid]
               with open("logs/logfile_flipkart.txt", "a+", encoding="utf-8") as log_file:
-                log_file.write(f"Order ID: {orderid}, SKU: {order_details["sku"]}, Qty: {i.get("QTY", None)}\n")
+                log_file.write(f"Order ID: {orderid}, SKU: {order_details[orderid][0]["sku"]}, Qty: {i.get("QTY", None)}\n")
                 log_file.write("-" * 50 + "\n")
             output_pdf_path = os.path.join(output_folder, f"Order_{orderid_name}.pdf")
             new_doc.save(output_pdf_path)
