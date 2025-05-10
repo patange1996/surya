@@ -16,16 +16,19 @@ def extract_table_with_camelot(pdf_path, page_number):
         df = tables[0].df  # Convert to DataFrame
         df.columns = df.iloc[0] # Set first row as header
         df = df[1:].reset_index(drop=True) # Remove first row
-        desc_col = next((col for col in df.columns if 'item name' in col.lower()), None)
+        desc_col = next((col for col in df.columns if 'item' in col.lower()), None)
         qty_col = next((col for col in df.columns if 'qty' in col.lower()), None)
         if desc_col and qty_col and "Qty" in df.columns:
           #remove the rows above "TOTAL:"
-          idx = df[df.apply(lambda row: row.astype(str).str.contains('TOTAL:', case=False, na=False).any(), axis=1)].index
-          if not idx.empty and idx[0] > 0:
-              df = df.iloc[:idx[0]]  # Keep only the rows above "total"
+          # idx = df[df.apply(lambda row: row.astype(str).str.contains('TOTAL:', case=False, na=False).any(), axis=1)].index
+          # if not idx.empty and idx[0] > 0:
+          #     df = df.iloc[:idx[0]]  # Keep only the rows above "total"
           df_filtered = df[[desc_col, qty_col]]
           df_filtered = df_filtered.copy()
-          sku_pattern = r"\(([^)]+)\)\s*HSN:"
+          df_filtered["Item\tName"] = df_filtered["Item\tName"].map(
+              lambda x: re.sub(r"\s+", " ", str(x)).strip() if pd.notnull(x) else None
+          )
+          sku_pattern = r'Style.*Code:.*"(.*)"'
           # df_filtered["sku"] = df_filtered[desc_col].str.extract(sku_pattern)
           df_filtered.loc[:, "sku"] = (
               df_filtered[desc_col]
@@ -43,10 +46,12 @@ def extract_order_details(text):
     # need to change the regex pattern to match the order id
     orderid_match = re.search(r"Order No\s*:\s*([\w\d]+)", text, re.IGNORECASE)
     scanner_page_match = re.search(r"Ship to:|Ship From:", text, re.IGNORECASE)
+    shipment_id_match = re.search(r"Shipment ID\s*:\s*(\d+)", text)
     
     orderid = orderid_match.group(1) if orderid_match else None
+    shipment_id = shipment_id_match.group(1) if shipment_id_match else "Not Found"
     
-    return orderid, bool(scanner_page_match)
+    return orderid, bool(scanner_page_match), shipment_id
   
 def clean_text(text):
     """Clean text by removing extra spaces, newlines, etc."""
@@ -80,14 +85,16 @@ def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
     for i, page in enumerate(doc):
         text = extract_text_from_page(page)
         if text:
-            orderid, scanner_page_match = extract_order_details(text)
+            orderid, scanner_page_match, shipmentid = extract_order_details(text)
             if orderid != prev_order_id:
               if orderid:
                 prev_order_id = orderid
             if orderid:
-                order_details = {orderid: [{"sku": d["Vendor Style Code"], "Qty": d["Total Qty"], "Items": d["Total Items"]} for d in final_output_dict if d["Order ID"] == orderid]}
+                order_details = {orderid: [{"sku": d["Vendor Style Code"], "Qty": d["Total Qty"], "Items": d["Total Items"], "shipment_id": d["AWB No"]} for d in final_output_dict if d["Order ID"] == orderid]}
                 if not order_details[orderid]:
                   order_details[orderid] = extract_table_with_camelot(pdf_path, i+1)
+                  [d.update({'Items': len(order_details[orderid])}) for d in order_details[orderid]]
+                  [d.update({'shipment_id': shipmentid}) for d in order_details[orderid]]
                 if orderid not in order_pages and not skip_page_for_now:
                     order_pages[orderid] = []
                 elif orderid not in order_pages and skip_page_for_now:
@@ -136,12 +143,13 @@ def excel_to_dataframe(file_path):
     return df
 
 def grab_required_fields(data):
-    required_columns = ["Order ID", "Vendor Style Code", "Total Items", "Total Qty"]  # Replace with actual column names
+    required_columns = ["Order ID", "Vendor Style Code", "Total Items", "Total Qty", "AWB No"]  # Replace with actual column names
     filtered_data = [{col: row[col] for col in required_columns if col in row} for row in data]
     return filtered_data
 
 
 if __name__ == "__main__":
+    pd.set_option('future.no_silent_downcasting', True)
     file_path = "first_cry_final_integrate/firstcry.xlsx"  # Replace with the actual file path
     df = excel_to_dataframe(file_path)
     final_output_dict = grab_required_fields(df.to_dict(orient="records"))
