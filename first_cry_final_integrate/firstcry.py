@@ -20,9 +20,9 @@ def extract_table_with_camelot(pdf_path, page_number):
         qty_col = next((col for col in df.columns if 'qty' in col.lower()), None)
         if desc_col and qty_col and "Qty" in df.columns:
           #remove the rows above "TOTAL:"
-          # idx = df[df.apply(lambda row: row.astype(str).str.contains('TOTAL:', case=False, na=False).any(), axis=1)].index
-          # if not idx.empty and idx[0] > 0:
-          #     df = df.iloc[:idx[0]]  # Keep only the rows above "total"
+          idx = df[df.apply(lambda row: row.astype(str).str.contains('Total', case=False, na=False).any(), axis=1)].index
+          if not idx.empty and idx[0] > 0:
+              df = df.iloc[:idx[0]]  # Keep only the rows above "total"
           df_filtered = df[[desc_col, qty_col]]
           df_filtered = df_filtered.copy()
           df_filtered["Item\tName"] = df_filtered["Item\tName"].map(
@@ -95,6 +95,11 @@ def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
                   order_details[orderid] = extract_table_with_camelot(pdf_path, i+1)
                   [d.update({'Items': len(order_details[orderid])}) for d in order_details[orderid]]
                   [d.update({'shipment_id': shipmentid}) for d in order_details[orderid]]
+                  with open("logs/logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
+                    log_file.write(f"{orderid} Not found from csv, hence scraping it from pdf itself.\n")
+                else:
+                  with open("logs/logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
+                    log_file.write(f"{orderid} found from csv.\n")
                 if orderid not in order_pages and not skip_page_for_now:
                     order_pages[orderid] = []
                 elif orderid not in order_pages and skip_page_for_now:
@@ -131,6 +136,11 @@ def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
                 writer.write(output_pdf)
             with open("logs/logfile_firstcry.txt", "a+", encoding="utf-8") as log_file:
                 log_file.write(f"Saved: {output_pdf_path}\n")
+    #For testing created a csv.
+    rows = [{"item": item} for _, items in order_pages.items() for item in items if isinstance(item, list)]
+    flat_list = [item for entry in rows for item in entry["item"]]
+    df = pd.DataFrame(flat_list)
+    df.to_csv("order_pages.csv", index=False)
     return order_pages
 
 def excel_to_dataframe(file_path):
