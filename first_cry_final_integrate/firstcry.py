@@ -18,7 +18,7 @@ def extract_table_with_camelot(pdf_path, page_number):
         df = df[1:].reset_index(drop=True) # Remove first row
         desc_col = next((col for col in df.columns if 'item' in col.lower()), None)
         qty_col = next((col for col in df.columns if 'qty' in col.lower()), None)
-        if desc_col and qty_col and "Qty" in df.columns:
+        if desc_col and qty_col and any("Qty" in col for col in df.columns):
           #remove the rows above "TOTAL:"
           idx = df[df.apply(lambda row: row.astype(str).str.contains('Total', case=False, na=False).any(), axis=1)].index
           if not idx.empty and idx[0] > 0:
@@ -37,9 +37,12 @@ def extract_table_with_camelot(pdf_path, page_number):
               .str.replace(r"\s+", " ", regex=True)  # Remove newlines and extra spaces
               .str.strip()  # Trim spaces
           )
+          matching_cols = [col for col in df_filtered.columns if "Qty" in col]
+          if matching_cols:
+              df.rename(columns={matching_cols[0]: "Qty"}, inplace=True)
           df_filtered.drop(columns=desc_col, inplace=True, errors="ignore")
           return df_filtered.to_dict(orient='records')
-    return None
+    return {}
 
 def extract_order_details(text):
     """Extract Order ID, SKU, and Quantity from text."""
