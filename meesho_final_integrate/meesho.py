@@ -6,6 +6,8 @@ from itertools import zip_longest
 from datetime import datetime
 
 def clean_dict(dict):
+  if not dict:
+    return dict
   length = len(dict["Qty"])
   filter_len = len(list(filter(lambda x: re.search(r"^\d+$", x), dict["Qty"])))
   if length == filter_len:
@@ -44,8 +46,12 @@ def extract_text_with_fitz(input_pdf, page_num, read_all = False):
     text = page.get_text("text")
     awb = re.search(r"(\b[A-Z0-9]{6,}\b)\s*Product Details", text.replace("\n"," "))
     match = re.search(r"Product Details\n(.*?)\nTAX INVOICE", text, re.DOTALL)
+    if not match:
+      match = re.search(r"Product Details\n(.*?)$", text, re.DOTALL)
     purchase_order_no = re.search(r"Purchase Order No.(.*?)Invoice", text.replace("\n"," "), re.IGNORECASE)
-    # if purchase_order_no:
+    if match and not purchase_order_no:
+      digit_match = re.compile(r"\s(\d*_\d)", re.IGNORECASE)
+      purchase_order_no = digit_match.search(match.group(1).replace("\n", " "))
     if match and purchase_order_no and read_all:
       lines = match.group(1).split("\n")
 
@@ -62,12 +68,12 @@ def extract_text_with_fitz(input_pdf, page_num, read_all = False):
       data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
       total_len = len(data_dict["SKU"])
       data_dict["purchase_order_no"] = [purchase_order_no.group(1).strip() for _ in range(total_len)]
-      awb_value = awb.group(1)
+      awb_value = awb.group(1) if awb else ''
       data_dict["AWB"] = [re.sub(r"[^\w]", "", awb_value)for _ in range(total_len)]
       return data_dict
-    elif purchase_order_no:
+    elif purchase_order_no and not read_all:
       data_dict["purchase_order_no"] = [purchase_order_no.group(1).strip()]
-      awb_value = awb.group(1)
+      awb_value = awb.group(1) if awb else ""
       data_dict["AWB"] = [re.sub(r"[^\w]", "", awb_value)]
       return data_dict
     else:
@@ -141,7 +147,7 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
     order_details = {}
 
     for page_num, page in enumerate(doc):
-        # if not page_num >= 1258:
+        # if not page_num >= 135:
         #   continue
         result_dict = extract_text_with_fitz(input_pdf, page_num)
             # if result_dict.get("Order No.", None):
@@ -150,7 +156,7 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
             #       result_dict = extract_text_with_camelot(input_pdf, page_num+1)
             # else:
             #     result_dict = extract_text_with_camelot(input_pdf, page_num+1)
-        if result_dict.get("purchase_order_no", None):
+        if result_dict and result_dict.get("AWB")[0]:
             new_doc = fitz.open()  # Create a new PDF document
             page = doc[page_num]  # Get current page
             rect = page.rect  # Get original page size
@@ -177,7 +183,7 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
               if not order_details[orderid]:
                 fitz_dict = extract_text_with_fitz(input_pdf, page_num, read_all=True)
                 fitz_dict = clean_dict(fitz_dict)
-                if not re.search(r"^\d+$", fitz_dict["Qty"][0]):
+                if fitz_dict and not re.search(r"^\d+$", fitz_dict["Qty"][0]):
                   camelot_dict = extract_text_with_camelot(input_pdf, page_num+1)
                   camelot_dict = clean_dict(camelot_dict)
                   camelot_dict["purchase_order_no"] = result_dict.get("purchase_order_no", None)
@@ -186,8 +192,9 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
                 else:
                   final_df = pd.DataFrame(fitz_dict)
                 # df_filtered = final_df[final_df['Order No.'].str.startswith(orderid)]
-                for i in final_df.to_dict(orient="records"):
-                  order_details[orderid].append({"sku":i["SKU"], "Qty":i["Qty"], "AWB":i["AWB"]})
+                if not final_df.empty:
+                  for i in final_df.to_dict(orient="records"):
+                    order_details[orderid].append({"sku":i["SKU"], "Qty":i["Qty"], "AWB":i["AWB"]})
               if str(order_details[orderid][0].get("AWB")) != "nan":
                 order_pages[order_details[orderid][0]["AWB"]] = []
                 order_pages[order_details[orderid][0]["AWB"]].append(order_details[orderid])
