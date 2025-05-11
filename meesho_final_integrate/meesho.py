@@ -5,6 +5,36 @@ import re, csv
 from itertools import zip_longest
 from datetime import datetime
 
+def clean_dict(dict):
+  length = len(dict["Qty"])
+  filter_len = len(list(filter(lambda x: re.search(r"^\d+$", x), dict["Qty"])))
+  if length == filter_len:
+    return dict
+  cleaned_dict = {}
+
+  for k, v in dict.items():
+      key_lower = k.lower()
+      if v == "":
+          continue
+      elif isinstance(v, list):
+        cleaned_list = [item for item in v if item != ""]  # Remove empty strings
+
+        if not cleaned_list:
+            cleaned_list.append("")  # Skip if list is now empty
+
+        if key_lower == "sku":
+            merged = " ".join(str(item) for item in cleaned_list)
+            cleaned_dict[k] = [merged]
+        elif len(cleaned_list) == 1:
+            cleaned_dict[k] = cleaned_list
+        elif len(cleaned_list) == 2:
+            cleaned_dict[k] = [cleaned_list[0]]  # Keep only the first
+        else:
+            cleaned_dict[k] = cleaned_list
+      else:
+          cleaned_dict[k] = v
+  return cleaned_dict
+
 def extract_text_with_fitz(input_pdf, page_num, read_all = False):
     doc = fitz.open(input_pdf)
 
@@ -12,9 +42,9 @@ def extract_text_with_fitz(input_pdf, page_num, read_all = False):
     data_dict = {}
     page = doc[page_num]
     text = page.get_text("text")
-    awb = re.search(r"(\S{15})\s*Product Details", text.replace("\n","", re.IGNORECASE))
+    awb = re.search(r"(\b[A-Z0-9]{6,}\b)\s*Product Details", text.replace("\n"," "))
     match = re.search(r"Product Details\n(.*?)\nTAX INVOICE", text, re.DOTALL)
-    purchase_order_no = re.findall(r"Purchase Order No.(.*?)Invoice", text.replace("\n",""), re.IGNORECASE)
+    purchase_order_no = re.search(r"Purchase Order No.(.*?)Invoice", text.replace("\n"," "), re.IGNORECASE)
     # if purchase_order_no:
     if match and purchase_order_no and read_all:
       lines = match.group(1).split("\n")
@@ -30,11 +60,15 @@ def extract_text_with_fitz(input_pdf, page_num, read_all = False):
 
       # Create a dictionary
       data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
-      data_dict["purchase_order_no"] = purchase_order_no
-      data_dict["AWB"]=awb.group(1)
+      total_len = len(data_dict["SKU"])
+      data_dict["purchase_order_no"] = [purchase_order_no.group(1).strip() for _ in range(total_len)]
+      awb_value = awb.group(1)
+      data_dict["AWB"] = [re.sub(r"[^\w]", "", awb_value)for _ in range(total_len)]
       return data_dict
     elif purchase_order_no:
-      data_dict["purchase_order_no"] = purchase_order_no
+      data_dict["purchase_order_no"] = [purchase_order_no.group(1).strip()]
+      awb_value = awb.group(1)
+      data_dict["AWB"] = [re.sub(r"[^\w]", "", awb_value)]
       return data_dict
     else:
       return {}
@@ -44,6 +78,7 @@ def extract_text_with_camelot(pdf_path, page_number):
     tables = camelot.read_pdf(pdf_path, pages=str(page_number))
     if tables.n > 0:
         digit_match = re.compile(r"\d_\d", re.IGNORECASE)
+        only_digit_match = re.compile(r"^\d+$", re.IGNORECASE)
         df = tables[0].df
         filtered_df = df[df.apply(lambda row: row.astype(str).str.contains("Product Details", case=False, na=False).any(), axis=1)]
         if filtered_df.empty:
@@ -60,6 +95,7 @@ def extract_text_with_camelot(pdf_path, page_number):
         if filtered_lines[4] != "Order No.":
           filtered_lines.insert(4, "Order No.")
         order_matching_pos = [i for i, item in enumerate(filtered_lines) if digit_match.search(item)]
+        qty_matching_pos = [i for i, item in enumerate(filtered_lines) if only_digit_match.search(item)]
         if order_matching_pos:
           match_index = order_matching_pos[0]  # Get first match
 
@@ -67,11 +103,17 @@ def extract_text_with_camelot(pdf_path, page_number):
               value = filtered_lines.pop(match_index)  # Remove it
               if len(filtered_lines) < 10:  # Ensure the list has enough length
                   filtered_lines.extend([""] * (10 - len(filtered_lines)))  # Fill with empty values if needed
+              
               if "free size" in filtered_lines[5].lower():
                   filtered_lines[5] = filtered_lines[5].split("Free Size")[0].strip()
                   filtered_lines.insert(6, "Free Size")
                   filtered_lines.pop()
-                  filtered_lines[9] = value  # Insert at position 10          
+                  filtered_lines[9] = value  # Insert at position 10  
+          if qty_matching_pos:
+              qty_match_index = qty_matching_pos[0]
+              if qty_match_index != 7:
+                filtered_lines = filtered_lines[:qty_match_index] + [""] + filtered_lines[qty_match_index:-1]
+                filtered_lines[9] = value
         keys = filtered_lines[:5]
         values = filtered_lines[5:]
         
@@ -99,6 +141,8 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
     order_details = {}
 
     for page_num, page in enumerate(doc):
+        # if not page_num >= 1258:
+        #   continue
         result_dict = extract_text_with_fitz(input_pdf, page_num)
             # if result_dict.get("Order No.", None):
             #     istext = bool(re.fullmatch(r"[a-zA-Z]+", result_dict.get("Order No.", [None])[0]))
@@ -131,10 +175,19 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
               # orderid = orderid.split("_")[0]
               order_details = {orderid: [{"sku": d["SKU"], "Qty": d["Qty."], "AWB": d["AWB"]} for d in final_output_dict if d["Sub Order No."].split("_")[0] == orderid]}
               if not order_details[orderid]:
-                camelot_dict = extract_text_with_fitz(input_pdf, page_num, read_all=True)
-                camelot_df = pd.DataFrame(camelot_dict)
-                df_filtered = camelot_df[camelot_df['Order No.'].str.startswith(orderid)]
-                order_details[orderid].append({"sku":df_filtered["SKU"][0], "Qty":df_filtered["Qty"][0], "AWB":df_filtered["AWB"][0]})
+                fitz_dict = extract_text_with_fitz(input_pdf, page_num, read_all=True)
+                fitz_dict = clean_dict(fitz_dict)
+                if not re.search(r"^\d+$", fitz_dict["Qty"][0]):
+                  camelot_dict = extract_text_with_camelot(input_pdf, page_num+1)
+                  camelot_dict = clean_dict(camelot_dict)
+                  camelot_dict["purchase_order_no"] = result_dict.get("purchase_order_no", None)
+                  camelot_dict["AWB"] = extract_text_with_fitz(input_pdf, page_num)["AWB"]
+                  final_df = pd.DataFrame(camelot_dict)
+                else:
+                  final_df = pd.DataFrame(fitz_dict)
+                # df_filtered = final_df[final_df['Order No.'].str.startswith(orderid)]
+                for i in final_df.to_dict(orient="records"):
+                  order_details[orderid].append({"sku":i["SKU"], "Qty":i["Qty"], "AWB":i["AWB"]})
               if str(order_details[orderid][0].get("AWB")) != "nan":
                 order_pages[order_details[orderid][0]["AWB"]] = []
                 order_pages[order_details[orderid][0]["AWB"]].append(order_details[orderid])
@@ -147,6 +200,7 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
                 log_file.write(f"Order ID: {orderid}, SKU: {order_pages[prev_awb][0][0]["sku"]}, Qty: {order_pages[prev_awb][0][0]["Qty"]}\n")
             output_pdf_path = os.path.join(output_folder, f"Order_{prev_awb}.pdf")
             order_pages[prev_awb].append({"output_pdf_location" : output_pdf_path})
+            print(prev_awb)
             # order_pages[orderid].append({"output_pdf_location" : output_pdf_path})
             new_doc.save(output_pdf_path)
             with open("logs/logfile_meesho.txt", "a+", encoding="utf-8") as log_file:
