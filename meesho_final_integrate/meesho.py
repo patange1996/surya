@@ -102,9 +102,11 @@ def extract_text_with_camelot(pdf_path, page_number):
           filtered_lines.insert(4, "Order No.")
         order_matching_pos = [i for i, item in enumerate(filtered_lines) if digit_match.search(item)]
         qty_matching_pos = [i for i, item in enumerate(filtered_lines) if only_digit_match.search(item)]
-        if order_matching_pos:
+        if order_matching_pos and len(order_matching_pos) == 1:
           match_index = order_matching_pos[0]  # Get first match
-
+        else:
+          filtered_lines.pop()
+          match_index = order_matching_pos[0]
           if match_index != 9:  # If not already at position 10
               value = filtered_lines.pop(match_index)  # Remove it
               if len(filtered_lines) < 10:  # Ensure the list has enough length
@@ -147,8 +149,8 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
     order_details = {}
 
     for page_num, page in enumerate(doc):
-        # if not page_num >= 135:
-        #   continue
+        if not page_num >= 1310:
+          continue
         result_dict = extract_text_with_fitz(input_pdf, page_num)
             # if result_dict.get("Order No.", None):
             #     istext = bool(re.fullmatch(r"[a-zA-Z]+", result_dict.get("Order No.", [None])[0]))
@@ -183,14 +185,22 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
               if not order_details[orderid]:
                 fitz_dict = extract_text_with_fitz(input_pdf, page_num, read_all=True)
                 fitz_dict = clean_dict(fitz_dict)
-                if fitz_dict and not re.search(r"^\d+$", fitz_dict["Qty"][0]):
+                if fitz_dict and len(fitz_dict["Qty"]) != len(list(filter(lambda x: re.search(r"^\d+$", x), fitz_dict["Qty"]))):
                   camelot_dict = extract_text_with_camelot(input_pdf, page_num+1)
                   camelot_dict = clean_dict(camelot_dict)
                   camelot_dict["purchase_order_no"] = result_dict.get("purchase_order_no", None)
                   camelot_dict["AWB"] = extract_text_with_fitz(input_pdf, page_num)["AWB"]
-                  final_df = pd.DataFrame(camelot_dict)
+                  try:
+                    final_df = pd.DataFrame(camelot_dict)
+                  except Exception as e:
+                    print(f"Error extracting page_num: {page_num}")
+                    continue
                 else:
-                  final_df = pd.DataFrame(fitz_dict)
+                  try:
+                    final_df = pd.DataFrame(fitz_dict)
+                  except Exception as e:
+                    print(f"Error extracting page_num: {page_num}")
+                    continue
                 # df_filtered = final_df[final_df['Order No.'].str.startswith(orderid)]
                 if not final_df.empty:
                   for i in final_df.to_dict(orient="records"):

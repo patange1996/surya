@@ -5,7 +5,7 @@ import re, csv
 from itertools import zip_longest
 from datetime import datetime
 import numpy as np
-from pydash import clean as _c
+# from pydash import clean as _c
 
 def extract_text_with_fitz(input_pdf, page_num, only_orderid=False):
     doc = fitz.open(input_pdf)
@@ -122,11 +122,12 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
               order_details = {orderid: [{"sku": d["SKU"], "Qty": d["Quantity"]} for d in final_output_dict if d["Order Id"] == orderid]}
               if not order_details[orderid]:
                 sku = re.sub(r'^\d\s*', '', i.get(" ID | Description", None).split("|")[0]) if i.get(" ID | Description", None) else ""
-                order_details[orderid] = {
-                "sku" : _c(sku),
-                "Qty" : _c(i.get("QTY", None)),
-              }
-                log_file.write(f"did not get the {orderid} from csv, getting it from pdf itself")
+                order_details[orderid] = [{
+                "sku" : sku.strip(),
+                "Qty" : i.get("QTY", None).strip(),
+              }]
+                with open("logs/logfile_flipkart.txt", "a+", encoding="utf-8") as log_file:
+                  log_file.write(f"did not get the {orderid} from csv, getting it from pdf itself")
               order_pages[str(orderid)] = order_details[orderid]
               with open("logs/logfile_flipkart.txt", "a+", encoding="utf-8") as log_file:
                 log_file.write(f"Order ID: {orderid}, SKU: {order_details[orderid][0]["sku"]}, Qty: {i.get("QTY", None)}\n")
