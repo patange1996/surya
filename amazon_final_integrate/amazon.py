@@ -37,7 +37,7 @@ def extract_table_with_camelot(pdf_path, page_number):
           )
           df_filtered.drop(columns=desc_col, inplace=True, errors="ignore")
           return df_filtered.to_dict(orient='records')
-    return None
+    return {}
 
 def extract_order_details(text, second_page_flag= False):
     """Extract Order ID, SKU, and Quantity from text."""

@@ -74,6 +74,8 @@ def extract_text_with_camelot(pdf_path, page_number):
         filtered_df.reset_index(drop=True, inplace=True)
         filtered_df.columns = filtered_df.iloc[0]
         filtered_df = filtered_df[1:]
+        if str(filtered_df["QTY"][1]) == "nan":
+          filtered_df.at[1, 'QTY'] = filtered_df.at[1, 'SKU ID | Description'].split(" ")[-1]
         order_id, awb = extract_text_with_fitz(pdf_path, page_number, only_orderid=True)
         filtered_df.loc[:, 'Order No.'] = [order_id]
         filtered_df.loc[:, 'AWB'] = [awb]
@@ -97,6 +99,8 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
     order_pages = {}
 
     for page_num, page in enumerate(doc):
+        if not page_num >= 36:
+          continue
         if result_dict := extract_text_with_fitz(input_pdf, page_num):
             if not result_dict.get("Order No.", None):
               result_dict = extract_text_with_camelot(input_pdf, page_num+1)
@@ -135,6 +139,7 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
               }]
                 with open("logs/logfile_flipkart.txt", "a+", encoding="utf-8") as log_file:
                   log_file.write(f"did not get the {orderid} from csv, getting it from pdf itself\n")
+              order_pages[str(orderid)] = []
               order_pages[str(orderid)] = order_details[orderid]
               with open("logs/logfile_flipkart.txt", "a+", encoding="utf-8") as log_file:
                 log_file.write(f"Order ID: {orderid}, SKU: {order_details[orderid][0]["sku"]}, Qty: {i.get("QTY", None)}\n")
