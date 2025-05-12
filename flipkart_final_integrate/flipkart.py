@@ -125,7 +125,7 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
             orderid_name = "_".join(set([i.split("_")[0] for i in result_dict.get("Order No.", [])]))
             for i in df.to_dict(orient="records"):
               orderid = i.get("Order No.", None)
-              order_details = {orderid: [{"sku": d["SKU"], "Qty": d["Quantity"]} for d in final_output_dict if d["Order Id"] == orderid]}
+              order_details = {orderid: [{"sku": d["SKU"], "Qty": d["Quantity"], "AWB":d["Tracking ID"]} for d in final_output_dict if d["Order Id"] == orderid]}
               if not order_details[orderid]:
                 sku = re.sub(r'^\d\s*', '', i.get(" ID | Description", None).split("|")[0]) if i.get(" ID | Description", None) else ""
                 order_details[orderid] = [{
@@ -167,7 +167,7 @@ def csv_to_dataframe(file_path):
     return df
   
 def grab_required_fields(data):
-    required_columns = ["Order Id", "SKU", "Quantity"]  # Replace with actual column names
+    required_columns = ["Order Id", "SKU", "Quantity", "Tracking ID"]  # Replace with actual column names
     filtered_data = [{col: row[col] for col in required_columns if col in row} for row in data]
     return filtered_data
   
