@@ -17,8 +17,9 @@ def extract_text_with_fitz(input_pdf, page_num, only_orderid=False):
       page = doc[page_num]
     text = page.get_text("text")
     order_id_match = re.search(r"E-Kart Logistics\s*\n*(OD\d+)", text)
+    awb = re.search(r"AWB No\. (\w+)", text.replace("\n", " "))
     if only_orderid:
-      return order_id_match.group(1)
+      return order_id_match.group(1),awb.group(1)
     match = re.search(r"SKU(.*?)Invoice", text, re.DOTALL)
     if match:
       lines = match.group(1).split("\n")
@@ -35,6 +36,9 @@ def extract_text_with_fitz(input_pdf, page_num, only_orderid=False):
       # Create a dictionary
       data_dict = {key: list(vals) for key, vals in zip(keys, zip_longest(*value_chunks, fillvalue=""))}
       data_dict["Order No."] = [order_id_match.group(1)]
+      # total_len = len(data_dict["SKU"])
+      awb_value = awb.group(1) if awb else ''
+      data_dict["AWB"] = [awb_value]
       #check if qty is a digit
       if not re.search(r"^\d+$", data_dict["QTY"][0]):
         return {}
@@ -70,8 +74,9 @@ def extract_text_with_camelot(pdf_path, page_number):
         filtered_df.reset_index(drop=True, inplace=True)
         filtered_df.columns = filtered_df.iloc[0]
         filtered_df = filtered_df[1:]
-        order_id = extract_text_with_fitz(pdf_path, page_number, only_orderid=True)
+        order_id, awb = extract_text_with_fitz(pdf_path, page_number, only_orderid=True)
         filtered_df.loc[:, 'Order No.'] = [order_id]
+        filtered_df.loc[:, 'AWB'] = [awb]
         filtered_df = filtered_df.rename(columns={'SKU ID | Description': ' ID | Description'})
         return filtered_df.to_dict(orient='list')
     else:
@@ -116,6 +121,7 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
 
             # Save the new PDF with two pages per original page
             df = pd.DataFrame(result_dict)
+            df = df.astype(str)
             orderid_name = "_".join(set([i.split("_")[0] for i in result_dict.get("Order No.", [])]))
             for i in df.to_dict(orient="records"):
               orderid = i.get("Order No.", None)
@@ -125,9 +131,10 @@ def split_pdf_custom(input_pdf, output_folder, final_output_dict, top_ratio=0.4)
                 order_details[orderid] = [{
                 "sku" : sku.strip(),
                 "Qty" : i.get("QTY", None).strip(),
+                "AWB": i.get("AWB", None).strip(),
               }]
                 with open("logs/logfile_flipkart.txt", "a+", encoding="utf-8") as log_file:
-                  log_file.write(f"did not get the {orderid} from csv, getting it from pdf itself")
+                  log_file.write(f"did not get the {orderid} from csv, getting it from pdf itself\n")
               order_pages[str(orderid)] = order_details[orderid]
               with open("logs/logfile_flipkart.txt", "a+", encoding="utf-8") as log_file:
                 log_file.write(f"Order ID: {orderid}, SKU: {order_details[orderid][0]["sku"]}, Qty: {i.get("QTY", None)}\n")
