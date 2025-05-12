@@ -86,16 +86,23 @@ def split_pdf_by_orderid(pdf_path, output_folder, final_output_dict):
     
     for i, page in enumerate(doc):
         text = extract_text_from_page(page)
+        if not text:
+          text_ocr = extract_text_from_page(page, ocr=True)
+          awb = re.search(r"AWB (\w+)", text_ocr)
+          if awb:
+            awb_value = awb.group(1)
         #if first page text is empty which is always empty go find order id on the next page or skip that page for now with detals of the page in 
         if text:
             orderid, number_or_id, first_page_match = extract_order_details(text)
             if orderid:
                 orderid = orderid.replace("-","")
                 orderid = f"{orderid[:3]}-{orderid[3:10]}-{orderid[10:]}"
-                order_details = {orderid: [{"sku": d["sku"], "Qty": d["quantity-purchased"]} for d in final_output_dict if d["order-id"] == orderid]}
+                order_details = {orderid: [{"sku": d["sku"], "Qty": d["quantity-purchased"], "AWB": d["tracking-id"]} for d in final_output_dict if d["order-id"] == orderid]}
                 #second preference grabbing order details from camelot
                 if not order_details[orderid]:
                     order_details[orderid] = extract_table_with_camelot(pdf_path, i+1)
+                    for j in order_details[orderid]:
+                      j["AWB"] = awb_value
                 if orderid not in order_pages and not skip_page_for_now:
                     order_pages[orderid] = []
                 elif orderid not in order_pages and skip_page_for_now:
@@ -154,7 +161,7 @@ def txt_to_dataframe(file_path):
     return df
 
 def grab_required_fields(data):
-    required_columns = ["order-id", "sku", "quantity-purchased"]  # Replace with actual column names
+    required_columns = ["order-id", "sku", "quantity-purchased", "tracking-id"]  # Replace with actual column names
     filtered_data = [{col: row[col] for col in required_columns if col in row} for row in data]
     return filtered_data
 
